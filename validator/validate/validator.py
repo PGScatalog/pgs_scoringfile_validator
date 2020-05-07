@@ -1,20 +1,23 @@
 import sys
+import gzip
 import csv
 import os
 import argparse
+import pathlib
 import logging
 import pandas as pd
 from pandas_schema import Schema
-from validate.schema import *
+#from validator.schema import *
+from schema import *
 
 """
-GWAS Summary statistics file validator 
+GWAS Summary statistics file validator
 - using pandas_schema https://github.com/TMiguelT/PandasSchema
-It can be run on files pre- ('standard') or post- harmonisation ('harmonised') 
-and also in the 'curator' format. 
-File names and numbers of fields on each row are checked. 
-Fields validated in the standard and harmonised stage are all the required fields 
-for HDF5 convertion. The curator format validation only checks the file name, 
+It can be run on files pre- ('standard') or post- harmonisation ('harmonised')
+and also in the 'curator' format.
+File names and numbers of fields on each row are checked.
+Fields validated in the standard and harmonised stage are all the required fields
+for HDF5 convertion. The curator format validation only checks the file name,
 the table shape and the pvalue.
 """
 
@@ -26,51 +29,112 @@ logger = logging.getLogger(__name__)
 
 
 class Validator:
-    def __init__(self, file, stage):
+    def __init__(self, file, filetype, logfile="VALIDATE.log", error_limit=0):
         self.file = file
-        self.stage = stage
+        self.filetype = filetype
         self.schema = None
         self.header = []
         self.cols_to_validate = []
         self.cols_to_read = []
-        self.sep = get_seperator(self.file) 
+        self.sep = get_seperator(self.file)
         self.bad_rows = []
-        self.required_fields = STD_COLS
+        self.row_errors = []
+        self.errors_seen = {}
+        #self.required_fields = STD_COLS
+        self.valid_extensions = VALID_FILE_EXTENSIONS
+        self.logfile = logfile
+        self.error_limit = int(error_limit)
 
-        if self.stage == 'curated':
+        if self.filetype == 'curated' or self.filetype == 'gwas-upload':
             # if curator format allow for more chromosome values
             VALID_CHROMOSOMES.extend(['X', 'x', 'Y', 'y', 'MT', 'Mt', 'mt'])
-    
+
+        handler = logging.FileHandler(self.logfile)
+        handler.setLevel(logging.ERROR)
+        logger.addHandler(handler)
+
+
     def setup_field_validation(self):
         self.header = self.get_header()
-        if self.stage == 'curated':
-            self.required_fields = [key for key, value in CURATOR_STD_MAP.items() if value == PVAL_DSET]
+        if self.filetype == 'curated':
+            self.required_fields = [key for key, value in CURATOR_STD_MAP.items() if value == EFFECT_WEIGHT_DSET]
             self.cols_to_validate = [CURATOR_STD_MAP[h] for h in self.header if h in self.required_fields]
         else:
-            self.cols_to_validate = [h for h in self.header if h in self.required_fields]
-        self.cols_to_read = [h for h in self.header if h in self.required_fields]
-        
-    def setup_schema(self):
-        self.setup_field_validation()
-        self.schema = Schema([VALIDATORS[h] for h in self.cols_to_validate])
+            self.cols_to_validate = [h for h in self.header if h in VALID_COLS]
+        self.cols_to_read = [h for h in self.header if h in VALID_COLS]
+
+    #def setup_schema(self):
+    #    self.setup_field_validation()
+    #    self.schema = Schema([VALIDATORS[h] for h in self.cols_to_validate])
 
     def get_header(self):
         first_row = pd.read_csv(self.file, sep=self.sep, comment='#', nrows=1, index_col=False)
         return first_row.columns.values
 
     def validate_data(self):
-        self.setup_schema()    
-        if not self.check_file_is_square():
+        self.setup_field_validation()
+        if not self.open_file_and_check_for_squareness():
             logger.error("Please fix the table. Some rows have different numbers of columns to the header")
             logger.info("Rows with different numbers of columns to the header are not validated")
         for chunk in self.df_iterator():
             to_validate = chunk[self.cols_to_read]
             to_validate.columns = self.cols_to_validate # sets the headers to standard format if neeeded
-            errors = self.schema.validate(to_validate)
-            for error in errors:
+            # validate the snp column if present
+
+            if SNP_DSET in self.header:
+                self.schema = Schema([SNP_VALIDATORS[h] for h in self.cols_to_validate])
+                errors = self.schema.validate(to_validate)
+                self.store_errors(errors)
+            if CHR_DSET and BP_DSET in self.header:
+                self.schema = Schema([POS_VALIDATORS[h] for h in self.cols_to_validate])
+                errors = self.schema.validate(to_validate)
+                self.store_errors(errors)
+            if EFFECT_WEIGHT_DSET in self.header:
+                self.schema = Schema([EFFECT_WEIGHT_VALIDATOR[h] for h in self.cols_to_validate])
+                errors = self.schema.validate(to_validate)
+                self.store_errors(errors)
+            if OR_DSET in self.header:
+                self.schema = Schema([OR_VALIDATOR[h] for h in self.cols_to_validate])
+                errors = self.schema.validate(to_validate)
+                self.store_errors(errors)
+            if HR_DSET in self.header:
+                self.schema = Schema([HR_VALIDATOR[h] for h in self.cols_to_validate])
+                errors = self.schema.validate(to_validate)
+                self.store_errors(errors)
+            self.process_errors()
+            if len(self.bad_rows) >= self.error_limit:
+                break
+        if not self.bad_rows:
+            logger.info("File is valid")
+            return True
+        else:
+            logger.info("File is invalid - {} bad rows, limit set to {}".format(len(self.bad_rows), self.error_limit))
+            return False
+
+    def process_errors(self):
+        for error in self.row_errors:
+            if len(self.bad_rows) < self.error_limit or self.error_limit < 1:
                 logger.error(error)
-                self.bad_rows.append(error.row)
-                
+                if error.row not in self.bad_rows:
+                    self.bad_rows.append(error.row)
+        self.row_errors = []
+
+    def store_errors(self, errors):
+        for error in errors:
+            seen = 0
+            row_number = error.row
+            col = error.column
+            # Avoid duplication as the errors can be detected several times
+            if row_number in self.errors_seen.keys():
+                if col in self.errors_seen[row_number].keys():
+                    seen = 1
+                else:
+                    self.errors_seen[row_number][col] = 1
+            else:
+                self.errors_seen[row_number] = { col : 1 }
+            if seen == 0:
+                self.row_errors.append(error)
+
     def write_valid_lines_to_file(self):
         newfile = self.file + ".valid"
         first_chunk = True
@@ -82,10 +146,18 @@ class Validator:
             else:
                 chunk.to_csv(newfile, mode='a', header=False, sep='\t', index=False, na_rep='NA')
 
-    def validate_filename(self):
-        if not check_ext(self.file, 'tsv'):
-            logger.error("File extension should be .tsv")
+    def validate_file_extension(self):
+        check_exts = [check_ext(self.file, ext) for ext in self.valid_extensions]
+        if not any(check_exts):
+            self.valid_ext = False
+            logger.error("File extension should be in {}".format(self.valid_extensions))
             return False
+        else:
+            self.valid_ext = True
+        return True
+
+    def validate_filename(self):
+        self.validate_file_extension()
         pmid, study, trait, build = None, None, None, None
         filename = self.file.split('/')[-1].split('.')[0]
         filename_parts = filename.split('-')
@@ -101,41 +173,66 @@ class Validator:
         return True
 
     def df_iterator(self):
-        df = pd.read_csv(self.file, 
-                         sep=self.sep, 
-                         dtype=str, 
+        df = pd.read_csv(self.file,
+                         sep=self.sep,
+                         dtype=str,
                          error_bad_lines=False,
                          warn_bad_lines=False,
-                         comment='#', 
+                         comment='#',
                          chunksize=1000000)
         return df
 
-    def check_file_is_square(self):
+    def check_file_is_square(self, csv_file):
         square = True
-        with open(self.file) as csv_file:
-            dialect = csv.Sniffer().sniff(csv_file.readline())
-            csv_file.seek(0)
-            reader = csv.reader(csv_file, dialect)
-            count = 1
-            for row in reader:
-                if (len(row) != len(self.header)):
-                    logger.error("Length of row {c} is: {l} instead of {h}".format(c=count, l=str(len(row)), h=str(len(self.header))))
-                    square = False
-                count += 1
+        dialect = csv.Sniffer().sniff(csv_file.readline())
+        csv_file.seek(0)
+        #reader = csv.reader(csv_file, dialect)
+        reader = csv.reader(csv_file, delimiter=self.sep)
+        count = 1
+        for row in reader:
+            if len(row) != 0:
+                if row[0].startswith('#'):
+                    continue
+            if (len(row) != len(self.header)):
+                logger.error("Length of row {c} is: {l} instead of {h}".format(c=count, l=str(len(row)), h=str(len(self.header))))
+                square = False
+            count += 1
         return square
+
+    def open_file_and_check_for_squareness(self):
+        if pathlib.Path(self.file).suffix in [".gz", ".gzip"]:
+             with gzip.open(self.file, 'rt') as f:
+                 return self.check_file_is_square(f)
+        else:
+            with open(self.file) as f:
+                 return self.check_file_is_square(f)
 
     def validate_headers(self):
         self.setup_field_validation()
-        required_is_subset = set(self.required_fields).issubset(self.header)
+        required_is_subset = set(STD_COLS_VAR).issubset(self.header)
         if not required_is_subset:
-            logger.error("Required headers: {} are not in the file header: {}".format(self.required_fields, self.header))
-        return required_is_subset 
-        
+            # check if everything but snp:
+            required_is_subset = set(STD_COLS_VAR_POS).issubset(self.header)
+            if not required_is_subset:
+                required_is_subset = set(STD_COLS_VAR_SNP).issubset(self.header)
+            if not required_is_subset:
+                logger.error("Required headers: {} are not in the file header: {}".format(STD_COLS_VAR, self.header))
+
+        # Check if at least one of the effect columns is there
+        has_effect_col = 0
+        for col in STD_COLS_EFFECT:
+            if set([col]).issubset(self.header):
+                has_effect_col = 1
+                break
+        if not has_effect_col:
+            logger.error("Required headers: at least one of the columns '{}' must be in the file header: {}".format(STD_COLS_EFFECT, self.header))
+            required_is_subset = None
+
+        return required_is_subset
+
 
 def check_ext(filename, ext):
-    filename = filename.split('/')[-1]
-    parts = filename.split('.')
-    if len(parts) == 2 and parts[-1] == ext:
+    if filename.endswith(ext):
         return True
     return False
 
@@ -148,8 +245,8 @@ def check_build_is_legit(build):
 
 def get_seperator(file):
     filename, file_extension = os.path.splitext(file)
-    sep =  '\s+'
-    if file_extension == '.csv':
+    sep = '\t'
+    if '.csv' in file_extension:
         sep = ','
     return sep
 
@@ -157,28 +254,34 @@ def get_seperator(file):
 def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument("-f", help='The path to the summary statistics file to be validated', required=True)
-    argparser.add_argument("--stage", help='The stage in the process the file to be validated is in', default='standard', choices=['curated','standard','harmonised'])
+    argparser.add_argument("--filetype", help='The type of file/stage in the process the file to be validated is in. Recommended to leave as default if unknown.', default='gwas-upload', choices=['gwas-upload','curated','standard','harmonised'])
     argparser.add_argument("--logfile", help='Provide the filename for the logs', default='VALIDATE.log')
+    argparser.add_argument("--linelimit", help='Stop when this number of bad rows has been found', default=1000)
     argparser.add_argument("--drop-bad-lines", help='Store the good lines from the file in a file named <summary-stats-file>.valid', action='store_true', dest='dropbad')
-    
+
     args = argparser.parse_args()
 
     logfile = args.logfile
-    handler = logging.FileHandler(logfile)
-    handler.setLevel(logging.ERROR)
-    logger.addHandler(handler)
+    linelimit = args.linelimit
 
-    validator = Validator(file=args.f, stage=args.stage)
-    
-    logger.info("Validating filename...")
-    if not validator.validate_filename():
-        logger.info("Invalid filename: {}".format(args.f)) 
-        logger.info("Exiting before any further checks")
-        sys.exit()
-    
+    validator = Validator(file=args.f, filetype=args.filetype, logfile=args.logfile, error_limit=linelimit)
+
+    if args.filetype == "curated":
+        logger.info("Validating filename...")
+        if not validator.validate_filename():
+            logger.info("Invalid filename: {}".format(args.f))
+            logger.info("Exiting before any further checks")
+            sys.exit()
+    else:
+        logger.info("Validating file extension...")
+        if not validator.validate_file_extension():
+            logger.info("Invalid file extesion: {}".format(args.f))
+            logger.info("Exiting before any further checks")
+            sys.exit()
+
     logger.info("Validating headers...")
     if not validator.validate_headers():
-        logger.info("Invalid headers...exiting before any further checks")            
+        logger.info("Invalid headers...exiting before any further checks")
         sys.exit()
 
     logger.info("Validating data...")

@@ -1,5 +1,7 @@
 import sys
 import csv
+sys.path.insert(0,'../../')
+from common_constants import *
 
 csv.field_size_limit(sys.maxsize)
 
@@ -32,37 +34,6 @@ header_mapper = {
         'MARKERNAME'
         ],
 
-    # P-value
-    # =======
-    'p_value': [
-        'p',
-        'pvalue',
-        'p_value',
-        'pval',
-        'p_val',
-        'gc_pvalue',
-        'gwas_p',
-        'frequentist_add_pvalue',
-        'scan_p',
-        'scanp',
-        'p_wald', 
-        'european_ancestry_pval_fix',
-        'bcac_onco_icogs_gwas_p1df',
-        'bcac_icogs1_risk_P1df',
-        'mainp',
-        'pv-clinical_c_k57',
-        'frequentist_add_wald_pvalue_1',
-        'P',
-        'P.value',
-        'ALL.RANDOM.PVAL',
-        'P_BOLT_LMM',
-        'P_fathers_age_death',
-        'P_parents_age_death',
-        'P_top_1_percent',
-        'P-value',
-        'P-val'
-        ],
-
     # Chromosome
     # ==========
     'chromosome': [
@@ -86,7 +57,7 @@ header_mapper = {
         'base_pair',
         'basepair',
         'base_pair_location',
-        'pos_build36',  
+        'pos_build36',
         'position_b37',
         'bp_hg19',
         'BP',
@@ -94,10 +65,11 @@ header_mapper = {
         'POS_b37',
         'POS' ,
         'Position',
-        'position_build36', 
+        'position_build36',
         'Position_b37',
         'Position_hg19',
         'Pos_GRCh37',
+        'chr_position'
         ],
 
     # Odds ratio
@@ -110,20 +82,13 @@ header_mapper = {
         'OR'
         ],
 
-    # Upper confidence interval
-    # =========================
-    'ci_upper': [
-        'U95',
-        'orupper',
-        'u95'
-        ],
-
-    # Lower confidence interval
-    # =========================
-    'ci_lower': [
-        'L95',
-        'orlower',
-        'l95'
+    # Hazard ratio
+    # ==========
+    'hazard_ratio': [
+        'hr',
+        'hazard_ratio',
+        'hazardatio',
+        'HR'
         ],
 
     # Beta
@@ -136,7 +101,7 @@ header_mapper = {
         'gwas_beta',
         'european_ancestry_beta_fix',
         'stdbeta',
-        'bcac_onco_icogs_gwas_beta',  
+        'bcac_onco_icogs_gwas_beta',
         'bcac_icogs1_risk_beta',
         'log_odds',
         'maineffects',
@@ -151,31 +116,6 @@ header_mapper = {
         'Beta',
         'EFFECT',
         'EFFECT_A1'
-        ],
-
-    # Standard error
-    # ==============
-    'standard_error': [
-        'se',
-        'standard_error',
-        'stderr',
-        'european_ancestry_se_fix',
-        'bcac_onco_icogs_gwas_se',
-        'bcac_icogs1_risk_se',
-        'log_odds_se',
-        'mainse',
-        'standarderror',
-        'nse-clinical_c_k57',
-        'frequentist_add_se_1',
-        'StdErr',
-        'SE',
-        'SE_fathers_age_death',
-        'SE_parents_age_death',
-        'SE_top_1_percent',
-        'StdErr',    
-        'SEBETA',
-        'STDERR',
-        'se_error'
         ],
 
     # Effect allele
@@ -203,10 +143,10 @@ header_mapper = {
         'Coded',
         'Effect-allele'
         ],
-    
+
     # Other allele
     # ============
-    'other_allele': [
+    'reference_allele': [
         'a2',
         'Allele2',
         'allele_2',
@@ -225,11 +165,11 @@ header_mapper = {
         'alleleB',
         'A2',
         'alleleA',
-        'ALLELE0',  
+        'ALLELE0',
         'allele2',
         'NONEFF_ALLELE',
         'OtherAllele',
-        'non_coded_allele',    
+        'non_coded_allele',
         'Non_coded',
         'Other-allele'
         ],
@@ -251,11 +191,11 @@ header_mapper = {
         'bcac_onco_icogs_gwas_eaf_controls',
         'bcac_icogs1_european_controls_eaf',
         'eaf_ukb',
-        'allelefreq', 
+        'allelefreq',
         'controls_maf',
         'effectAlleleFreq',
         'ALL.FREQ.VAR',
-        'A1FREQ',   
+        'A1FREQ',
         'freqA1',
         'EAF_UKB',
         'EAF' ,
@@ -265,334 +205,211 @@ header_mapper = {
         'Coded_freq',
         'Effect-allele-frequency',
         'Freq1'
-        ],
-    
-    # Number of studies
-    # =================
-    'nstudy': [
-        'nstudy',
-        'n_study',
-        'nstudies',
-        'n_studies'
-        ],
-
-    # n
-    # =
-    'n': [
-        'n',
-        'N' ,
-        'N-analyzed',
-        'TotalN',
-        'Sample-size',
-        'weight',
-        'ncompletesamples'
-        ],
-
-    # n cases
-    # =======
-    'n_cas': [
-        'ncase',
-        'cases_n',
-        'n_cases',
-        'n_cas',
-        'n_case',
-        'cases_total',
-        'Sample-size-cases'
-        ],
-
-    # n cases
-    # =======
-    'n_con': [
-        'ncontrol',
-        'controls_n',
-        'n_control',
-        'n_con',
-        'n_controls',
-        'controls_total'
-        ],
-
-    # signed statistics
-    # =================
-    'z': [
-        'zscore',
-        'z-score',
-        'gc_zscore',
-        'z'
-        ],
+        ]
     }
 
+
+CHR = CHR_DSET
+BP = BP_DSET
+VARIANT = SNP_DSET
+OR_VAL = OR_DSET
+HR_VAL = HR_DSET
+BETA = BETA_DSET
+CHR_BP = 'chr_bp'
+EFFECT_ALLELE = EFFECT_DSET
+REF_ALLELE = REF_DSET
+FREQ_ALLELE = FREQ_DSET
+EFFECT_WEIGHT = EFFECT_WEIGHT_DSET
+LOCUS_NAME = LOCUS_DSET
 
 known_header_transformations = {
 
     # variant id
-    'snp': 'snp',
-    '#SNP': 'snp',
-    'markername': 'snp',
-    'marker': 'snp',
-    'rs': 'snp',
-    'rsid': 'snp',
-    'rs_number': 'snp',
-    'rs_numbers': 'snp',
-    'assay_name': 'snp',
-    'id': 'snp',
-    'id_dbsnp49': 'snp',
-    'snp_rsid': 'snp',
-    'MARKER': 'snp',
+    'snp': VARIANT,
+    '#SNP': VARIANT,
+    'markername': VARIANT,
+    'marker': VARIANT,
+    'rs': VARIANT,
+    'rsid': VARIANT,
+    'rs_number': VARIANT,
+    'rs_numbers': VARIANT,
+    'assay_name': VARIANT,
+    'id': VARIANT,
+    'id_dbsnp49': VARIANT,
+    'snp_rsid': VARIANT,
+    'MARKER': VARIANT,
     'snpid':'snp',
     'oldid':'snp',
     'phase1_1kg_id':'snp',
-    'SNP': 'snp',
-    'íd': 'snp',
-    'MarkerName': 'snp',
-    'rsID': 'snp',
-    'RSID': 'snp',
-    'MARKERNAME': 'snp',    
-    # p-value
-    'p': 'pval',
-    'pvalue': 'pval',
-    'p_value':  'pval',
-    'pval': 'pval',
-    'p_val': 'pval',
-    'gc_pvalue': 'pval',
-    'gwas_p': 'pval',
-    'frequentist_add_pvalue': 'pval',
-    'scan_p': 'pval',
-    'scanp': 'pval',
-    'p_wald': 'pval', 
-    'european_ancestry_pval_fix': 'pval',
-    'bcac_onco_icogs_gwas_p1df': 'pval',
-    'bcac_icogs1_risk_P1df': 'pval',
-    'mainp': 'pvalue',
-    'pv-clinical_c_k57': 'pval',
-    'frequentist_add_wald_pvalue_1': 'pval',
-    'P':'pval',
-    'P.value': 'pval',
-    'ALL.RANDOM.PVAL': 'pval',
-    'P_BOLT_LMM': 'pval',
-    'P_fathers_age_death': 'pval',
-    'P_parents_age_death': 'pval',
-    'P_top_1_percent': 'pval',
-    'P-value' : 'pval',
-    'P-val': 'pval',
+    'SNP': VARIANT,
+    'íd': VARIANT,
+    'MarkerName': VARIANT,
+    'rsID': VARIANT,
+    'RSID': VARIANT,
+    'MARKERNAME': VARIANT,
     # chromosome
-    'chr': 'chr',
-    'chromosome': 'chr',
-    'chrom': 'chr',
-    'scaffold': 'chr',
-    'chr_build36': 'chr',
-    '#chrom': 'chr',
-    'CHR': 'chr',
-    'Chromosome': 'chr',
+    'chr': CHR,
+    'chromosome': CHR,
+    'chrom': CHR,
+    'scaffold': CHR,
+    'chr_build36': CHR,
+    '#chrom': CHR,
+    'CHR': CHR,
+    'Chromosome': CHR,
     # base pair location
-    'bp': 'bp',
-    'pos': 'bp',
-    'position': 'bp',
-    'phys_pos': 'bp',
-    'base_pair': 'bp',
-    'basepair': 'bp',
-    'base_pair_location': 'bp',
-    'pos_build36': 'bp',  
-    'position_b37': 'bp',
-    'bp_hg19': 'bp',
-    'BP': 'bp',
-    'pos(b37)': 'bp',
-    'POS_b37': 'bp',
-    'POS' : 'bp',
-    'Position': 'bp',
-    'position_build36': 'bp', 
-    'Position_b37': 'bp',
-    'Position_hg19': 'bp',
+    'bp': BP,
+    'pos': BP,
+    'position': BP,
+    'phys_pos': BP,
+    'base_pair': BP,
+    'basepair': BP,
+    'base_pair_location': BP,
+    'pos_build36': BP,
+    'position_b37': BP,
+    'bp_hg19': BP,
+    'BP': BP,
+    'pos(b37)': BP,
+    'POS_b37': BP,
+    'POS' : BP,
+    'Position': BP,
+    'position_build36': BP,
+    'Position_b37': BP,
+    'Position_hg19': BP,
+    'position_hg19': BP,
     # chromosome combined with base pair location
-    'chr_pos' : 'chr_bp',
-    'chrpos' : 'chr_bp',
-    'chrpos_b37' : 'chr_bp',
-    'chr_pos_b37' : 'chr_bp',
-    'chrpos_b36' : 'chr_bp',
-    'chr_pos_b36' : 'chr_bp',
-    'chrpos_b38' : 'chr_bp',
-    'chr_pos_b38' : 'chr_bp',
-    'chr_pos_(b36)' : 'chr_bp',
-    'chr_pos_(b37)' : 'chr_bp',
-    'chr_pos_(b38)' : 'chr_bp',
-    'Chr': 'chr',
+    'chr_pos' : CHR_BP,
+    'chrpos' : CHR_BP,
+    'chr_position' : CHR_BP,
+    'chrpos_b37' : CHR_BP,
+    'chr_pos_b37' : CHR_BP,
+    'chrpos_b36' : CHR_BP,
+    'chr_pos_b36' : CHR_BP,
+    'chrpos_b38' : CHR_BP,
+    'chr_pos_b38' : CHR_BP,
+    'chr_pos_(b36)' : CHR_BP,
+    'chr_pos_(b37)' : CHR_BP,
+    'chr_pos_(b38)' : CHR_BP,
+    'Chr': CHR,
     # odds ratio
-    'or': 'or',
-    'odds_ratio': 'or',
-    'oddsratio': 'or',
-    'bcac_icogs1_or': 'or',
-    'OR': 'or',
-    # or range
-    'L95': 'ci_upper',
-    'U95': 'ci_lower',
-    'orlower': 'ci_lower',
-    'orupper': 'ci_upper',
-    'l95': 'ci_lower',
-    'u95': 'ci_upper',
+    'or': OR_VAL,
+    'odds_ratio': OR_VAL,
+    'oddsratio': OR_VAL,
+    'bcac_icogs1_or': OR_VAL,
+    'OR': OR_VAL,
+    # hazard ratio
+    'hr': HR_VAL,
+    'hazard_ratio': HR_VAL,
+    'hazardratio': HR_VAL,
+    'HR': HR_VAL,
     # beta
-    'b': 'beta',
-    'beta': 'beta',
-    'effects': 'beta',
-    'effect': 'beta',
-    'gwas_beta': 'beta',
-    'european_ancestry_beta_fix': 'beta',
-    'stdbeta': 'beta',
-    'bcac_onco_icogs_gwas_beta':'beta',  
-    'bcac_icogs1_risk_beta': 'beta',
-    'log_odds': 'beta',
-    'maineffects': 'beta',
-    'nbeta-clinical_c_k57': 'beta',
-    'Effect': 'beta',
-    'frequentist_add_beta_1:add/sle=1': 'beta',
-    'ALL.RANDOM.BETA': 'beta',
+    'b': BETA,
+    'beta': BETA,
+    'effects': BETA,
+    'effect': BETA,
+    'gwas_beta': BETA,
+    'european_ancestry_beta_fix': BETA,
+    'stdbeta': BETA,
+    'bcac_onco_icogs_gwas_beta':'beta',
+    'bcac_icogs1_risk_beta': BETA,
+    'log_odds': BETA,
+    'maineffects': BETA,
+    'nbeta-clinical_c_k57': BETA,
+    'Effect': BETA,
+    'frequentist_add_beta_1:add/sle=1': BETA,
+    'ALL.RANDOM.BETA': BETA,
     'BETA':'beta',
-    'BETA_fathers_age_death': 'beta',
-    'BETA_parents_age_death': 'beta',
-    'BETA_top_1_percent': 'beta',
-    'Beta': 'beta',
-    'EFFECT': 'beta',
-    'EFFECT_A1': 'beta',
-    # standard error
-    'se': 'se',
-    'standard_error': 'se',
-    'stderr': 'se',
-    'european_ancestry_se_fix': 'se',
-    'bcac_onco_icogs_gwas_se': 'se',
-    'bcac_icogs1_risk_se': 'se',
-    'log_odds_se': 'se',
-    'mainse': 'se',
-    'standarderror': 'se',
-    'nse-clinical_c_k57': 'se',
-    'frequentist_add_se_1': 'se',
-    'StdErr': 'se',
-    'SE': 'se',
-    'SE_fathers_age_death': 'se',
-    'SE_parents_age_death': 'se',
-    'SE_top_1_percent': 'se',
-    'StdErr': 'se',    
-    'SEBETA': 'se',
-    'STDERR': 'se',
-    'se_error': 'se',    
+    'BETA_fathers_age_death': BETA,
+    'BETA_parents_age_death': BETA,
+    'BETA_top_1_percent': BETA,
+    'Beta': BETA,
+    'EFFECT': BETA,
+    'EFFECT_A1': BETA,
     # effect allele
-    'a1': 'effect_allele',
-    'allele1': 'effect_allele',
-    'allele_1': 'effect_allele',
-    'effect_allele': 'effect_allele',
-    'alt' : 'effect_allele',
-    'inc_allele': 'effect_allele',
-    'ea': 'effect_allele',
-    'alleleb': 'effect_allele',
-    'allele_b': 'effect_allele',
-    'effectallele': 'effect_allele',
-    'a1': 'effect_allele',
-    'alleleB': 'effect_allele',
-    'A1': 'effect_allele',
+    'a1': EFFECT_ALLELE,
+    'allele1': EFFECT_ALLELE,
+    'allele_1': EFFECT_ALLELE,
+    'effect_allele': EFFECT_ALLELE,
+    'alt' : EFFECT_ALLELE,
+    'inc_allele': EFFECT_ALLELE,
+    'ea': EFFECT_ALLELE,
+    'alleleb': EFFECT_ALLELE,
+    'allele_b': EFFECT_ALLELE,
+    'effectallele': EFFECT_ALLELE,
+    'a1': EFFECT_ALLELE,
+    'alleleB': EFFECT_ALLELE,
+    'A1': EFFECT_ALLELE,
     'Allele1':'effect_allele',
-    'alleleB': 'effect_allele',
-    'ALLELE1': 'effect_allele',
-    'EFF_ALLELE': 'effect_allele',
-    'EffectAllele': 'effect_allele',
-    'coded_allele': 'effect_allele',
-    'Coded': 'effect_allele',
-    'Effect-allele': 'effect_allele',
+    'alleleB': EFFECT_ALLELE,
+    'ALLELE1': EFFECT_ALLELE,
+    'EFF_ALLELE': EFFECT_ALLELE,
+    'EffectAllele': EFFECT_ALLELE,
+    'coded_allele': EFFECT_ALLELE,
+    'Coded': EFFECT_ALLELE,
+    'Effect-allele': EFFECT_ALLELE,
     # other allele
-    'a2': 'other_allele',
-    'Allele2': 'other_allele',
-    'allele_2': 'other_allele',
-    'other_allele': 'other_allele',
-    'ref': 'other_allele',
-    'non_effect_allele': 'other_allele',
-    'dec_allele': 'other_allele',
-    'nea': 'other_allele',
-    'allelea': 'other_allele',
-    'allele_a': 'other_allele',
-    'reference_allele': 'other_allele',
-    'allele0': 'other_allele',
-    'referenceallele': 'other_allele',
-    'a0': 'other_allele',
-    'noneffect_allele': 'other_allele',
-    'alleleB': 'other_allele',
-    'A2': 'other_allele',
-    'alleleA': 'other_allele',
-    'ALLELE0': 'other_allele',  
-    'allele2': 'other_allele',
-    'NONEFF_ALLELE': 'other_allele',
-    'OtherAllele': 'other_allele',
-    'non_coded_allele': 'other_allele',    
-    'Non_coded': 'other_allele',
-    'Other-allele': 'other_allele',
+    'a2': REF_ALLELE,
+    'Allele2': REF_ALLELE,
+    'allele_2': REF_ALLELE,
+    'other_allele': REF_ALLELE,
+    'ref': REF_ALLELE,
+    'non_effect_allele': REF_ALLELE,
+    'dec_allele': REF_ALLELE,
+    'nea': REF_ALLELE,
+    'allelea': REF_ALLELE,
+    'allele_a': REF_ALLELE,
+    'reference_allele': REF_ALLELE,
+    'allele0': REF_ALLELE,
+    'referenceallele': REF_ALLELE,
+    'a0': REF_ALLELE,
+    'noneffect_allele': REF_ALLELE,
+    'alleleB': REF_ALLELE,
+    'A2': REF_ALLELE,
+    'alleleA': REF_ALLELE,
+    'ALLELE0': REF_ALLELE,
+    'allele2': REF_ALLELE,
+    'NONEFF_ALLELE': REF_ALLELE,
+    'OtherAllele': REF_ALLELE,
+    'non_coded_allele': REF_ALLELE,
+    'Non_coded': REF_ALLELE,
+    'Other-allele': REF_ALLELE,
     # effect allele frequency
-    'maf': 'eaf',
-    'eafcontrols': 'eaf',
-    'frq': 'eaf',
-    'ref_allele_frequency': 'eaf',
-    'frq_u': 'eaf',
-    'f_u': 'eaf',
-    'effect_allele_freq': 'eaf',
-    'effect_allele_frequency': 'eaf',
-    'freq1': 'eaf',
-    'alt_freq': 'eaf',
-    'a1_af': 'eaf',
-    'bcac_onco_icogs_gwas_eaf_controls': 'eaf',
-    'bcac_icogs1_european_controls_eaf': 'eaf',
-    'eaf_ukb': 'eaf',
-    'allelefreq': 'eaf', 
-    'controls_maf': 'eaf',
-    'effectAlleleFreq': 'eaf',
-    'ALL.FREQ.VAR': 'eaf',
-    'A1FREQ': 'eaf',   
-    'freqA1': 'eaf',
-    'EAF_UKB': 'eaf',
-    'EAF' : 'eaf',
-    'EFF_ALLELE_FREQ': 'eaf',
-    'Freq': 'eaf',
-    'FREQ_A1': 'eaf',
-    'Coded_freq': 'eaf',
-    'Effect-allele-frequency': 'eaf',
-    'Freq1': 'eaf',
-    # number of studies
-    'nstudy': 'nstudy',
-    'n_study': 'nstudy',
-    'nstudies': 'nstudy',
-    'n_studies': 'nstudy',
-    # n
-    'n': 'n',
-    'ncase': 'n_cas',
-    'cases_n': 'n_cas',
-    'n_cases': 'n_cas',
-    'n_controls': 'n_con',
-    'n_cas': 'n_cas',
-    'n_con': 'n_con',
-    'n_case': 'n_cas',
-    'cases_total': 'n_cas',
-    'ncontrol': 'n_con',
-    'controls_n': 'n_con',
-    'n_control': 'n_con',
-    'weight': 'n',
-    'ncompletesamples': 'n',
-    'controls_total': 'n_con',
-    'N' : 'n',
-    'N-analyzed': 'n',
-    'TotalN': 'n',
-    'Sample-size': 'n',
-    'Sample-size-cases': 'n_cas',
-    # signed statistics
-    'zscore': 'z',
-    'z-score': 'z',
-    'gc_zscore': 'z',
-    'z': 'z',
-    'log_odds': 'log_odds',
-    'signed_sumstat': 'signed_sumstat',
-    # info
-    'info': 'info',   
+    'maf': FREQ_ALLELE,
+    'eafcontrols': FREQ_ALLELE,
+    'frq': FREQ_ALLELE,
+    'ref_allele_frequency': FREQ_ALLELE,
+    'frq_u': FREQ_ALLELE,
+    'f_u': FREQ_ALLELE,
+    'effect_allele_freq': FREQ_ALLELE,
+    'effect_allele_frequency': FREQ_ALLELE,
+    'freq1': FREQ_ALLELE,
+    'alt_freq': FREQ_ALLELE,
+    'a1_af': FREQ_ALLELE,
+    'bcac_onco_icogs_gwas_eaf_controls': FREQ_ALLELE,
+    'bcac_icogs1_european_controls_eaf': FREQ_ALLELE,
+    'eaf_ukb': FREQ_ALLELE,
+    'allelefreq': FREQ_ALLELE,
+    'controls_maf': FREQ_ALLELE,
+    'effectAlleleFreq': FREQ_ALLELE,
+    'ALL.FREQ.VAR': FREQ_ALLELE,
+    'A1FREQ': FREQ_ALLELE,
+    'freqA1': FREQ_ALLELE,
+    'EAF_UKB': FREQ_ALLELE,
+    'EAF' : FREQ_ALLELE,
+    'EFF_ALLELE_FREQ': FREQ_ALLELE,
+    'Freq': FREQ_ALLELE,
+    'FREQ_A1': FREQ_ALLELE,
+    'Coded_freq': FREQ_ALLELE,
+    'Effect-allele-frequency': FREQ_ALLELE,
+    'Freq1': FREQ_ALLELE,
 }
 
-CHR_BP = 'chr_bp'
-CHR = 'chr'
-BP = 'bp'
-VARIANT = 'snp'
+#CHR_BP = 'chr_bp'
+#CHR = 'chr'
+#BP = 'bp'
+#VARIANT = 'snp'
 
-DESIRED_HEADERS = {'eaf', 'other_allele', 'effect_allele', 'se', 'beta', 'ci_lower', 'ci_upper',
-                   'or', 'bp', 'chr', 'pval', 'snp'}
+DESIRED_HEADERS = {CHR, BP, VARIANT, OR_VAL, HR_VAL, BETA, CHR_BP, EFFECT_ALLELE, REF_ALLELE, FREQ_ALLELE, EFFECT_WEIGHT, LOCUS_NAME}
+
 VALID_INPUT_HEADERS = set(known_header_transformations.values())
 
 VALID_CHROMS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', 'X', 'Y', 'MT']
@@ -628,4 +445,3 @@ def get_csv_reader(csv_file):
 
 def get_filename(file):
     return file.split("/")[-1].split(".")[0]
-

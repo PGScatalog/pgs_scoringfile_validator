@@ -1,31 +1,50 @@
-SNP_DSET = 'variant_id'
-MANTISSA_DSET = 'mantissa'
-EXP_DSET = 'exponent'
-PVAL_DSET = 'p_value'
-STUDY_DSET = 'study_accession'
-CHR_DSET = 'chromosome'
-BP_DSET = 'base_pair_location'
-OR_DSET = 'odds_ratio'
-RANGE_DSET = 'confidence_interval'
-BETA_DSET = 'beta'
-SE_DSET = 'standard_error'
+SNP_DSET = 'rsID'
+CHR_DSET = 'chr_name'
+BP_DSET = 'chr_position'
 EFFECT_DSET = 'effect_allele'
-OTHER_DSET = 'other_allele'
-FREQ_DSET = 'effect_allele_frequency'
+REF_DSET = 'reference_allele'
+EFFECT_WEIGHT_DSET = 'effect_weight'
+LOCUS_DSET ='locus_name'
+OR_DSET = 'OR'
+HR_DSET = 'HR'
+BETA_DSET = 'beta'
+FREQ_DSET = 'allelefrequency_effect'
+FLAG_INTERACTION_DSET = 'is_interaction'
+FLAG_RECESSIVE_DSET = 'is_recessive'
+FLAG_HAPLOTYPE_DSET = 'is_haplotype'
+FLAG_DIPLOTYPE_DSET = 'is_diplotype'
+METHOD_DSET = 'imputation_method'
+SNP_DESC_DSET = 'variant_description'
+INCLUSION_DSET = 'inclusion_criteria'
+#HM_EFFECT_DSET = 'hm_effect_allele'
+#HM_REF_DSET = 'hm_reference_allele'
+#HM_FREQ_DSET = 'hm_allelefrequency_effect'
+#HM_SNP_DSET = 'hm_rsID'
 
-vlen_dtype = h5py.special_dtype(vlen=str)
-DSET_TYPES = {SNP_DSET: vlen_dtype, PVAL_DSET: vlen_dtype, MANTISSA_DSET: float, EXP_DSET: int,
-              STUDY_DSET: vlen_dtype,
-              CHR_DSET: int, BP_DSET: int, OR_DSET: float, RANGE_DSET: vlen_dtype,
-              BETA_DSET: float, SE_DSET: float,
-              EFFECT_DSET: vlen_dtype, OTHER_DSET: vlen_dtype, FREQ_DSET: float}
+DSET_TYPES = {SNP_DSET: str, CHR_DSET: str, BP_DSET: int, EFFECT_DSET: str, REF_DSET: str,
+              EFFECT_WEIGHT_DSET: float, LOCUS_DSET: str, OR_DSET: float, HR_DSET: float, BETA_DSET: float, FREQ_DSET: float,
+              FLAG_INTERACTION_DSET: str, FLAG_RECESSIVE_DSET: str, FLAG_HAPLOTYPE_DSET: str, FLAG_DIPLOTYPE_DSET: str,
+              METHOD_DSET: str, SNP_DESC_DSET: str, INCLUSION_DSET: str} #,
+#              HM_EFFECT_DSET: str, HM_REF_DSET: str, HM_FREQ_DSET: float, HM_SNP_DSET: str}
 
-REFERENCE_DSET = MANTISSA_DSET
+#REFERENCE_DSET = BP_DSET
+#HARMONISATION_PREFIX = 'hm_'
+#GWAS_CATALOG_STUDY_PREFIX = 'GCST'
+
+TO_DISPLAY_ORDER = [ SNP_DSET, CHR_DSET, BP_DSET, EFFECT_DSET, REF_DSET, EFFECT_WEIGHT_DSET, FREQ_DSET, OR_DSET, HR_DSET, BETA_DSET]
+#TO_DISPLAY_DEFAULT = {SNP_DSET, CHR_DSET, BP_DSET}
+
+#TO_DISPLAY_RAW = {SNP_DSET, CHR_DSET, BP_DSET, EFFECT_DSET, REF_DSET, EFFECT_WEIGHT_DSET, FREQ_DSET, OR_DSET, HR_DSET, BETA_DSET,}
 
 
-TO_LOAD_DSET_HEADERS_DEFAULT = {SNP_DSET, PVAL_DSET, CHR_DSET, BP_DSET, OR_DSET, RANGE_DSET, BETA_DSET,
-                        SE_DSET, EFFECT_DSET, OTHER_DSET, FREQ_DSET}
-TO_STORE_DSETS_DEFAULT = {SNP_DSET, MANTISSA_DSET, EXP_DSET, STUDY_DSET, CHR_DSET, BP_DSET, OR_DSET, RANGE_DSET,
-                  BETA_DSET, SE_DSET, EFFECT_DSET, OTHER_DSET, FREQ_DSET}
-TO_QUERY_DSETS_DEFAULT = {SNP_DSET, MANTISSA_DSET, EXP_DSET, STUDY_DSET, CHR_DSET, BP_DSET, OR_DSET, RANGE_DSET, BETA_DSET,
-                  SE_DSET, EFFECT_DSET, OTHER_DSET, FREQ_DSET}
+#TO_LOAD_DSET_HEADERS_DEFAULT = {SNP_DSET, CHR_DSET, BP_DSET, EFFECT_DSET, REF_DSET, EFFECT_WEIGHT_DSET,
+#                                FREQ_DSET, OR_DSET, HR_DSET, BETA_DSET}
+
+#TO_STORE_DSETS_DEFAULT = {SNP_DSET, CHR_DSET, BP_DSET, EFFECT_DSET, REF_DSET,  EFFECT_WEIGHT_DSET,
+#                          FREQ_DSET, OR_DSET, HR_DSET, BETA_DSET}
+
+#TO_QUERY_DSETS_DEFAULT = {SNP_DSET, CHR_DSET, BP_DSET, EFFECT_DSET, REF_DSET, FREQ_DSET}
+
+#TO_INDEX = {BP_DSET}
+
+#REQUIRED = {CHR_DSET, SNP_DSET, EFFECT_DSET, REF_DSET, EFFECT_WEIGHT_DSET}
