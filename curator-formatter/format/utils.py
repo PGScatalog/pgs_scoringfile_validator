@@ -1,6 +1,7 @@
 import sys
 import csv
 sys.path.insert(0,'../../')
+sys.path.insert(0,'../')
 from common_constants import *
 
 csv.field_size_limit(sys.maxsize)

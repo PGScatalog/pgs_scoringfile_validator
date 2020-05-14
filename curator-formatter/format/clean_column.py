@@ -1,6 +1,7 @@
 import argparse
 import os
-from format.utils import *
+#from format.utils import *
+from utils import *
 from tqdm import tqdm
 
 
@@ -21,8 +22,8 @@ def open_close_perform(file, h, fixture):
         csv_reader = get_csv_reader(csv_file)
         writer = csv.writer(result_file, delimiter='\t')
         row_count = get_row_count(file)
-        
-        
+
+
         for row in tqdm(csv_reader, total=row_count, unit="rows"):
             if is_header:
                 is_header = False
@@ -38,9 +39,13 @@ def open_close_perform(file, h, fixture):
 
 
 def clean_row(index_h, row, fixture):
-    if fixture not in row[index_h]:
+    if not fixture:
+        row[index_h] = row[index_h].lstrip()
+        row[index_h] = row[index_h].rstrip()
+    elif fixture not in row[index_h]:
         raise ValueError("The fixture provided does not exist:", fixture)
-    row[index_h] = row[index_h].strip(fixture)
+    else:
+        row[index_h] = row[index_h].strip(fixture)
     return row
 
 
@@ -48,7 +53,7 @@ def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-f', help='The name of the file to be processed', required=True)
     argparser.add_argument('-header', help='The header of the column that will be cleaned', required=True)
-    argparser.add_argument('-fixture', help='The sequence that will be removed from the column data', required=True)
+    argparser.add_argument('-fixture', help='The sequence that will be removed from the column data. Omit this option if you only want to remove trailing spaces', required=False)
     args = argparser.parse_args()
 
     file = args.f

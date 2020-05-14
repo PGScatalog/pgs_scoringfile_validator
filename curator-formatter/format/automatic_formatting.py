@@ -4,10 +4,8 @@ import os
 import argparse
 from tqdm import tqdm
 import pandas as pd
-#from format import peek
-#from format.utils import *
-import peek
-from utils import *
+from format import peek
+from format.utils import *
 
 
 def multi_delimiters_to_single(row):
@@ -18,6 +16,7 @@ def process_file(file):
     filename, file_extension = os.path.splitext(file)
     new_filename = 'formatted_' + os.path.basename(filename) + '.tsv'
     temp_file  = filename + '.tmp'
+    unnamed_col = 'Unnamed: 0'
     main_sep = '\t'
     sep = main_sep
     if file_extension == '.csv':
@@ -66,7 +65,7 @@ def process_file(file):
         chunks = pd.read_csv(temp_file, comment='#', sep=main_sep, dtype=str, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
         first = True
         for chunk in chunks:
-            result = pd.merge(chunk, df, left_index=True, right_index=True).drop(['Unnamed: 0',CHR_BP],axis=1)
+            result = pd.merge(chunk, df, left_index=True, right_index=True).drop([unamed_col,CHR_BP],axis=1)
             result = ordered_columns(result)
             if first:
                 result.to_csv(new_filename, mode='w', header=True, sep=main_sep, na_rep="NA", index=False)
@@ -79,6 +78,8 @@ def process_file(file):
         chunks = pd.read_csv(temp_file, comment='#', sep=main_sep, dtype=str, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
         first = True
         for chunk in chunks:
+            if unnamed_col in chunk:
+                chunk = chunk.drop(unnamed_col,axis=1)
             chunk = ordered_columns(chunk)
             if first:
                 chunk.to_csv(new_filename, mode='w', header=True, sep=main_sep, na_rep="NA", index=False)
@@ -87,22 +88,33 @@ def process_file(file):
                 chunk.to_csv(new_filename, mode='a', header=False, sep=main_sep, na_rep="NA", index=False)
 
     elif CHR not in new_header and BP not in new_header and VARIANT in new_header:
-        # split the snp field
-        df = pd.read_csv(temp_file, usecols=[VARIANT], comment='#', sep=main_sep, dtype=str, error_bad_lines=False, warn_bad_lines=True)
-        df = df.join(df[VARIANT].str.split('_|:', expand=True).add_prefix(VARIANT).fillna('NA'))
-        df[CHR] = df[VARIANT + '0'].str.replace('CHR|chr|_|-', '')
-        df[CHR] = df[CHR].apply(lambda i: i if i in VALID_CHROMS else 'NA')
-        if VARIANT + '1' in df.columns:
-            df[BP] = df[VARIANT + '1']
-            df = df.drop(VARIANT + '1', axis=1)
-        df = df.drop(VARIANT + '0', axis=1)
-        df = df.drop(VARIANT, axis=1)
+
+        if VARIANT != 'rsID':
+            # split the snp field
+            df = pd.read_csv(temp_file, usecols=[VARIANT], comment='#', sep=main_sep, dtype=str, error_bad_lines=False, warn_bad_lines=True)
+
+            df = df.join(df[VARIANT].str.split('_|:', expand=True).add_prefix(VARIANT).fillna('NA'))
+            df[CHR] = df[VARIANT + '0'].str.replace('CHR|chr|_|-', '')
+            df[CHR] = df[CHR].apply(lambda i: i if i in VALID_CHROMS else 'NA')
+            if VARIANT + '1' in df.columns:
+                df[BP] = df[VARIANT + '1']
+                df = df.drop(VARIANT + '1', axis=1)
+            df = df.drop(VARIANT + '0', axis=1)
+            df = df.drop(VARIANT, axis=1)
 
         chunks = pd.read_csv(temp_file, comment='#', sep=main_sep, dtype=str, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
         first = True
         for chunk in chunks:
-            result = pd.merge(chunk, df, left_index=True, right_index=True).drop(['Unnamed: 0', VARIANT],axis=1)
+            if VARIANT == 'rsID':
+                result = chunk
+            else:
+                result = pd.merge(chunk, df, left_index=True, right_index=True).drop(VARIANT,axis=1)
+
+            # Cleanup/order the columns
+            if unnamed_col in result:
+                result = result.drop(unnamed_col,axis=1)
             result = ordered_columns(result)
+
             if first:
                 result.to_csv(new_filename, mode='w', header=True, sep=main_sep, na_rep="NA", index=False)
                 first = False
