@@ -65,7 +65,7 @@ def process_file(file):
         chunks = pd.read_csv(temp_file, comment='#', sep=main_sep, dtype=str, error_bad_lines=False, warn_bad_lines=True, chunksize=1000000)
         first = True
         for chunk in chunks:
-            result = pd.merge(chunk, df, left_index=True, right_index=True).drop([unamed_col,CHR_BP],axis=1)
+            result = pd.merge(chunk, df, left_index=True, right_index=True).drop([unnamed_col,CHR_BP],axis=1)
             result = ordered_columns(result)
             if first:
                 result.to_csv(new_filename, mode='w', header=True, sep=main_sep, na_rep="NA", index=False)
