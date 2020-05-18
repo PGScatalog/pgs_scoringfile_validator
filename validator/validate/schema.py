@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 from pandas_schema import Column
-from pandas_schema.validation import MatchesPatternValidation, InRangeValidation, InListValidation, CustomSeriesValidation, CustomElementValidation, CanConvertValidation, IsDtypeValidation, CanCallValidation
+from pandas_schema.validation import MatchesPatternValidation, InListValidation, CanConvertValidation, LeadingWhitespaceValidation, TrailingWhitespaceValidation
 #from validate.helpers import InInclusiveRangeValidation
 from .helpers import InInclusiveRangeValidation
 
@@ -69,7 +69,7 @@ GENERIC_VALIDATORS = {
     EFFECT_DSET: Column(EFFECT_DSET, [MatchesPatternValidation(r'^[ACTGNactgn]+$')], allow_empty=False),
     REF_DSET: Column(REF_DSET, [MatchesPatternValidation(r'^[ACTGNactgn]+$')], allow_empty=True),
     FREQ_DSET: Column(FREQ_DSET, [CanConvertValidation(DSET_TYPES[FREQ_DSET])], allow_empty=True),
-    LOCUS_DSET: Column(LOCUS_DSET, [CanConvertValidation(DSET_TYPES[LOCUS_DSET])], allow_empty=True)
+    LOCUS_DSET: Column(LOCUS_DSET, [CanConvertValidation(DSET_TYPES[LOCUS_DSET]), LeadingWhitespaceValidation(), TrailingWhitespaceValidation()], allow_empty=True)
 }
 
 SNP_VALIDATORS = {k:v for k,v in GENERIC_VALIDATORS.items()}

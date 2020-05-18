@@ -69,6 +69,15 @@ class Validator:
 
     def get_header(self):
         first_row = pd.read_csv(self.file, sep=self.sep, comment='#', nrows=1, index_col=False)
+        # Check if the column headers have leading and/or trailing spaces
+        # The leading/trailing spaces should raise an error during the header validation
+        leading_trailing_spaces = []
+        for col in first_row.columns.values:
+            if col.startswith(' ') or col.endswith(' '):
+                leading_trailing_spaces.append(col)
+        if len(leading_trailing_spaces):
+            logger.warning("The following headers have a leading and/or trailing spaces:\n|"+'|\n|'.join(leading_trailing_spaces)+'|')
+
         return first_row.columns.values
 
     def validate_data(self):
