@@ -1,0 +1,37 @@
+{
+   "outFilePrefix":"formatted_",
+   "md5":"True",
+   "fieldSeparator":"\t",
+   "removeLinesStarting":"#",
+   "keepColumns":[
+      "chr",
+      "bp",
+      "snp0",
+      "pval",
+      "beta",
+      "eaf"
+   ],
+   "columnConfig":[
+      {
+         "field":"chr",
+         "find":"CHR|chr|-|_",
+         "replace":"",
+         "keep": "True",
+         "rename":"chromsome"
+      }
+   ],
+   "headerRename":[
+      {
+         "chr":"chromosome"
+      },
+      {
+         "snp0":"variant_id"
+      },
+      {
+         "bp":"base_pair_location"
+      },
+      {
+         "pval":"p_value"
+      }
+   ]
+}

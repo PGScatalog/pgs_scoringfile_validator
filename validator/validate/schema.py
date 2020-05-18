@@ -6,7 +6,7 @@ from pandas_schema.validation import MatchesPatternValidation, InRangeValidation
 from .helpers import InInclusiveRangeValidation
 
 #from validate.common_constants import *
-sys_paths = ['../../']
+sys_paths = ['../']
 sys.path.extend(sys_paths)
 from common_constants import *
 

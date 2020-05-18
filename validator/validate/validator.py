@@ -256,7 +256,7 @@ def main():
     argparser.add_argument("-f", help='The path to the summary statistics file to be validated', required=True)
     argparser.add_argument("--filetype", help='The type of file/stage in the process the file to be validated is in. Recommended to leave as default if unknown.', default='gwas-upload', choices=['gwas-upload','curated','standard','harmonised'])
     argparser.add_argument("--logfile", help='Provide the filename for the logs', default='VALIDATE.log')
-    argparser.add_argument("--linelimit", help='Stop when this number of bad rows has been found', default=1000)
+    argparser.add_argument("--linelimit", help='Stop when this number of bad rows has been found', default=0)
     argparser.add_argument("--drop-bad-lines", help='Store the good lines from the file in a file named <summary-stats-file>.valid', action='store_true', dest='dropbad')
 
     args = argparser.parse_args()
@@ -265,6 +265,9 @@ def main():
     linelimit = args.linelimit
 
     validator = Validator(file=args.f, filetype=args.filetype, logfile=args.logfile, error_limit=linelimit)
+
+    print('#-------------------#\n#  File Validation  #\n#-------------------#\n')
+    print("Filename: "+args.f+"\n")
 
     if args.filetype == "curated":
         logger.info("Validating filename...")

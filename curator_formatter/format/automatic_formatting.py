@@ -4,8 +4,10 @@ import os
 import argparse
 from tqdm import tqdm
 import pandas as pd
-from format import peek
-from format.utils import *
+#from format import peek
+from . import peek
+#from format.utils import *
+from .utils import *
 
 
 def multi_delimiters_to_single(row):
@@ -13,8 +15,9 @@ def multi_delimiters_to_single(row):
 
 
 def process_file(file):
+    dirname = os.path.dirname(file)
     filename, file_extension = os.path.splitext(file)
-    new_filename = 'formatted_' + os.path.basename(filename) + '.tsv'
+    new_filename = dirname + '/formatted_' + os.path.basename(filename) + '.tsv'
     temp_file  = filename + '.tmp'
     unnamed_col = 'Unnamed: 0'
     main_sep = '\t'
@@ -37,7 +40,7 @@ def process_file(file):
         chunk.rename(columns=known_header_transformations, inplace=True)
         new_header = chunk.columns.values
         what_changed = dict(zip(header, new_header))
-        print("PARSED HEADER: "+str(new_header))
+        #print("PARSED HEADER: "+str(new_header))
 
 
         if first:
@@ -125,19 +128,19 @@ def process_file(file):
         print("Exiting because, couldn't map the headers")
         sys.exit()
 
-    print("\n")
-    print("------> Output saved in file:", new_filename, "<------")
-    print("\n")
-    print("Please use this file for any further formatting.")
-    print("\n")
-    print("Showing how the headers where mapped below...")
-    print("\n")
+    if os.path.isfile(temp_file):
+        os.remove(temp_file)
+
+    print("\n------> Output saved in file:", new_filename, "<------\n")
+    print("Please use this file for any further formatting.\n")
+    print("Showing how the headers where mapped below...\n")
     for key, value in what_changed.items():
         print(key, " -> ", value)
-    print("\n")
-    print("Peeking into the new file...")
+    print("\nPeeking into the new file...")
     print("\n")
     peek.peek(new_filename)
+
+    return new_filename
 
 
 def ordered_columns(dataframe):
@@ -151,7 +154,7 @@ def ordered_columns(dataframe):
     for hcol in df_header:
         if not hcol in new_header:
             new_header.append(hcol)
-    print("PROCESSED HEADER: "+str(new_header))
+    #print("PROCESSED HEADER: "+str(new_header))
     return dataframe[new_header]
 
 
@@ -161,18 +164,22 @@ def main():
     argparser.add_argument('-dir', help='The name of the directory containing the files that need to processed')
     args = argparser.parse_args()
 
+    new_file = None
+
+    print('\n#-------------------#\n#  File Formatting  #\n#-------------------#')
     if args.f and args.dir is None:
         file = args.f
-        process_file(file)
+        new_file = process_file(file)
     elif args.dir and args.f is None:
         dir = args.dir
         print("Processing the following files:")
         for f in glob.glob("{}/*".format(dir)):
             print(f)
-            process_file(f)
+            new_file = process_file(f)
     else:
         print("You must specify either -f <file> OR -dir <directory containing files>")
 
+    return new_file
 
 if __name__ == "__main__":
     main()
