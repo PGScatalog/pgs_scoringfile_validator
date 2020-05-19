@@ -29,11 +29,12 @@ logger = logging.getLogger(__name__)
 
 
 class Validator:
-    def __init__(self, file, filetype, logfile="VALIDATE.log", error_limit=0):
+    def __init__(self, file, filetype='pgs-upload', logfile="VALIDATE.log", error_limit=0):
         self.file = file
         self.filetype = filetype
         self.schema = None
         self.header = []
+        self.comment_lines_count = 1 # Counting the header line
         self.cols_to_validate = []
         self.cols_to_read = []
         self.sep = get_seperator(self.file)
@@ -45,12 +46,9 @@ class Validator:
         self.logfile = logfile
         self.error_limit = int(error_limit)
 
-        if self.filetype == 'curated' or self.filetype == 'pgs-upload':
-            # if curator format allow for more chromosome values
-            VALID_CHROMOSOMES.extend(['X', 'x', 'Y', 'y', 'MT', 'Mt', 'mt'])
-
         handler = logging.FileHandler(self.logfile)
-        handler.setLevel(logging.ERROR)
+        #handler.setLevel(logging.ERROR)
+        handler.setLevel(logging.INFO)
         logger.addHandler(handler)
 
 
@@ -132,6 +130,8 @@ class Validator:
         for error in errors:
             seen = 0
             row_number = error.row
+            file_line_number = row_number + self.comment_lines_count + 1 # rows are 0 indexes
+            error.row = str(row_number) + " (line "+str(file_line_number)+")"
             col = error.column
             # Avoid duplication as the errors can be detected several times
             if row_number in self.errors_seen.keys():
@@ -201,6 +201,7 @@ class Validator:
         for row in reader:
             if len(row) != 0:
                 if row[0].startswith('#'):
+                    self.comment_lines_count += 1
                     continue
             if (len(row) != len(self.header)):
                 logger.error("Length of row {c} is: {l} instead of {h}".format(c=count, l=str(len(row)), h=str(len(self.header))))
@@ -260,10 +261,39 @@ def get_seperator(file):
     return sep
 
 
+def run_validator(file, logfile):
+
+    if not file or not logfile:
+        logger.info("Missing file and/or logfile")
+        logger.info("Exiting before any further checks")
+        sys.exit()
+    if not os.path.exists(file):
+        logger.info("Error: the file '"+file+"' can't be found")
+        logger.info("Exiting before any further checks")
+        sys.exit()
+
+    validator = Validator(file=file, logfile=logfile)
+    logger.propagate = False
+
+    logger.info("Validating file extension...")
+    if not validator.validate_file_extension():
+        logger.info("Invalid file extesion: {}".format(file))
+        logger.info("Exiting before any further checks")
+        sys.exit()
+
+    logger.info("Validating headers...")
+    if not validator.validate_headers():
+        logger.info("Invalid headers...exiting before any further checks")
+        sys.exit()
+
+    logger.info("Validating data...")
+    validator.validate_data()
+
+
 def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument("-f", help='The path to the summary statistics file to be validated', required=True)
-    argparser.add_argument("--filetype", help='The type of file/stage in the process the file to be validated is in. Recommended to leave as default if unknown.', default='gwas-upload', choices=['gwas-upload','curated','standard','harmonised'])
+    argparser.add_argument("--filetype", help='The type of file/stage in the process the file to be validated is in. Recommended to leave as default if unknown.', default='pgs-upload', choices=['gwas-upload','curated','standard','harmonised'])
     argparser.add_argument("--logfile", help='Provide the filename for the logs', default='VALIDATE.log')
     argparser.add_argument("--linelimit", help='Stop when this number of bad rows has been found', default=0)
     argparser.add_argument("--drop-bad-lines", help='Store the good lines from the file in a file named <summary-stats-file>.valid', action='store_true', dest='dropbad')
