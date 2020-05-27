@@ -22,7 +22,7 @@ def main():
         data_sum = {'valid': [], 'invalid': [], 'other': []}
         count_files = 0
         # Browse directory: for each file run validator
-        for filepath in glob.glob(args.dir+"/*.*"):
+        for filepath in sorted(glob.glob(args.dir+"/*.*")):
             file = os.path.basename(filepath)
             filename = file.split('.')[0]
             print("Filename: "+file)
@@ -57,7 +57,9 @@ def main():
         if data_sum['other']:
             print("- Other issues: "+str(len(data_sum['other']))+"/"+str(count_files))
 
-    # Fetch results from log (valid vs invalid)
+        if data_sum['invalid']:
+            print("Invalid files:")
+            print("\n".join(data_sum['invalid']))
 
     # Print summary  + results
     elif not os.path.isdir(args.dir):

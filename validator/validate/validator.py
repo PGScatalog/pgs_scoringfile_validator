@@ -45,12 +45,14 @@ class Validator:
         self.valid_extensions = VALID_FILE_EXTENSIONS
         self.logfile = logfile
         self.error_limit = int(error_limit)
+        self.handler = logging.FileHandler(self.logfile)
+        self.handler.setLevel(logging.INFO)
+        #handler = logging.FileHandler(self.logfile)
+        ##handler.setLevel(logging.ERROR)
+        #handler.setLevel(logging.INFO)
 
-        handler = logging.FileHandler(self.logfile)
-        #handler.setLevel(logging.ERROR)
-        handler.setLevel(logging.INFO)
-        logger.addHandler(handler)
-
+        #logger.addHandler(handler)
+        logger.addHandler(self.handler)
 
     def setup_field_validation(self):
         self.header = self.get_header()
@@ -86,12 +88,22 @@ class Validator:
         for chunk in self.df_iterator():
             to_validate = chunk[self.cols_to_read]
             to_validate.columns = self.cols_to_validate # sets the headers to standard format if neeeded
+            print("TEST>")
+            print(to_validate.values)
+            print("<TEST")
             # validate the snp column if present
 
             if SNP_DSET in self.header:
-                self.schema = Schema([SNP_VALIDATORS[h] for h in self.cols_to_validate])
-                errors = self.schema.validate(to_validate)
-                self.store_errors(errors)
+                if CHR_DSET and BP_DSET in self.header:
+                    print("SNP_EMPTY_VALIDATORS")
+                    self.schema = Schema([SNP_EMPTY_VALIDATORS[h] for h in self.cols_to_validate])
+                    errors = self.schema.validate(to_validate)
+                    self.store_errors(errors)
+                else:
+                    self.schema = Schema([SNP_VALIDATORS[h] for h in self.cols_to_validate])
+                    errors = self.schema.validate(to_validate)
+                    self.store_errors(errors)
+
             if CHR_DSET and BP_DSET in self.header:
                 self.schema = Schema([POS_VALIDATORS[h] for h in self.cols_to_validate])
                 errors = self.schema.validate(to_validate)
@@ -263,6 +275,8 @@ def get_seperator(file):
 
 def run_validator(file, logfile):
 
+    logger.propagate = False
+
     if not file or not logfile:
         logger.info("Missing file and/or logfile")
         logger.info("Exiting before any further checks")
@@ -273,7 +287,6 @@ def run_validator(file, logfile):
         sys.exit()
 
     validator = Validator(file=file, logfile=logfile)
-    logger.propagate = False
 
     logger.info("Validating file extension...")
     if not validator.validate_file_extension():
@@ -288,6 +301,10 @@ def run_validator(file, logfile):
 
     logger.info("Validating data...")
     validator.validate_data()
+
+    # Close log handler
+    logger.removeHandler(validator.handler)
+    validator.handler.close()
 
 
 def main():

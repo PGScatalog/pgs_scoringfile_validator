@@ -75,6 +75,10 @@ GENERIC_VALIDATORS = {
 SNP_VALIDATORS = {k:v for k,v in GENERIC_VALIDATORS.items()}
 SNP_VALIDATORS[SNP_DSET] = Column(SNP_DSET, [CanConvertValidation(DSET_TYPES[SNP_DSET]), MatchesPatternValidation(r'^rs[0-9]+$')], allow_empty=False)
 
+SNP_EMPTY_VALIDATORS = {k:v for k,v in GENERIC_VALIDATORS.items()}
+SNP_EMPTY_VALIDATORS[SNP_DSET] = Column(SNP_DSET, [CanConvertValidation(DSET_TYPES[SNP_DSET]), MatchesPatternValidation(r'^(rs[0-9]+|nan)$')], allow_empty=False)
+SNP_EMPTY_VALIDATORS[CHR_DSET] = Column(CHR_DSET, [InListValidation(VALID_CHROMOSOMES)], allow_empty=False)
+SNP_EMPTY_VALIDATORS[BP_DSET]  = Column(BP_DSET, [CanConvertValidation(DSET_TYPES[BP_DSET]), InInclusiveRangeValidation(1, 999999999)], allow_empty=False)
 
 POS_VALIDATORS = {k:v for k,v in GENERIC_VALIDATORS.items()}
 POS_VALIDATORS[CHR_DSET] = Column(CHR_DSET, [InListValidation(VALID_CHROMOSOMES)], allow_empty=False)
