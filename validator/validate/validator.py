@@ -88,14 +88,10 @@ class Validator:
         for chunk in self.df_iterator():
             to_validate = chunk[self.cols_to_read]
             to_validate.columns = self.cols_to_validate # sets the headers to standard format if neeeded
-            print("TEST>")
-            print(to_validate.values)
-            print("<TEST")
-            # validate the snp column if present
 
+            # validate the snp column if present
             if SNP_DSET in self.header:
                 if CHR_DSET and BP_DSET in self.header:
-                    print("SNP_EMPTY_VALIDATORS")
                     self.schema = Schema([SNP_EMPTY_VALIDATORS[h] for h in self.cols_to_validate])
                     errors = self.schema.validate(to_validate)
                     self.store_errors(errors)
