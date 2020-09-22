@@ -22,7 +22,6 @@ def main():
     if not os.path.isdir(args.log_dir):
         print("Error: Log dir '"+args.log_dir+"' can't be found!")
         exit(1)
-
     if args.f and args.dir:
         print("Error: you can't use both options [-f] - single scoring file and [--dir] - directory of scoring files. Please use only 1 of these 2 options!")
         exit(1)
@@ -94,6 +93,7 @@ def main():
                     print("!! validation process had an issue: the log file can't be found")
                     data_sum['other'].append(filename)
 
+            # Print summary  + results
             print("\n# Summary:")
             print("  - Formatted: "+str(count_files_formatted)+"/"+str(count_files))
             if data_sum['valid']:
@@ -113,7 +113,6 @@ def main():
                 print("\n# File(s) with other validation issues:")
                 print("  - "+"\n  - ".join(data_sum['other']))
 
-        # Print summary  + results
         elif not os.path.isdir(args.dir):
             print("Error: the scoring file directory '"+args.dir+"' can't be found!")
 
