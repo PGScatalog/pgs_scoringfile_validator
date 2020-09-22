@@ -9,6 +9,7 @@ from . import peek
 #from format.utils import *
 from .utils import *
 
+extra_formatted_dir = '/formatted/'
 
 def multi_delimiters_to_single(row):
     return "\t".join(row.split())
@@ -17,7 +18,8 @@ def multi_delimiters_to_single(row):
 def process_file(file):
     dirname = os.path.dirname(file)
     filename, file_extension = os.path.splitext(file)
-    new_filename = dirname + '/formatted_' + os.path.basename(filename) + '.tsv'
+    create_formatted_directory(dirname)
+    new_filename = dirname + extra_formatted_dir + '/formatted_' + os.path.basename(filename) + '.tsv'
     temp_file  = filename + '.tmp'
     unnamed_col = 'Unnamed: 0'
     main_sep = '\t'
@@ -126,19 +128,21 @@ def process_file(file):
 
     else:
         print("Exiting because, couldn't map the headers")
+        os.remove(new_filename)
         sys.exit()
 
     if os.path.isfile(temp_file):
         os.remove(temp_file)
 
-    print("\n------> Output saved in file:", new_filename, "<------\n")
-    print("Please use this file for any further formatting.\n")
-    print("Showing how the headers where mapped below...\n")
-    for key, value in what_changed.items():
-        print(key, " -> ", value)
-    print("\nPeeking into the new file...")
-    print("\n")
-    peek.peek(new_filename)
+    if os.path.exists(new_filename):
+        print("\n------> Output saved in file:", new_filename, "<------\n")
+        print("Please use this file for any further formatting.\n")
+        print("Showing how the headers where mapped below...\n")
+        for key, value in what_changed.items():
+            print(key, " -> ", value)
+        print("\nPeeking into the new file...")
+        print("\n")
+        peek.peek(new_filename)
 
     return new_filename
 
@@ -158,10 +162,20 @@ def ordered_columns(dataframe):
     return dataframe[new_header]
 
 
+def create_formatted_directory(path):
+    """ Creates directory for a given file """
+    path += extra_formatted_dir
+    if not os.path.isdir(path):
+        try:
+            os.mkdir(path, 0o755)
+        except OSError:
+            print ("Creation of the directory %s failed" % path)
+            exit()
+
 def main():
     argparser = argparse.ArgumentParser()
-    argparser.add_argument('-f', help='The name of the file to be processed')
-    argparser.add_argument('-dir', help='The name of the directory containing the files that need to processed')
+    argparser.add_argument('-f', help='The name of the file to be processed', metavar='SCORING_FILE_NAME')
+    argparser.add_argument('--dir', help='The name of the directory containing the files that need to processed')
     args = argparser.parse_args()
 
     new_file = None
@@ -173,11 +187,11 @@ def main():
     elif args.dir and args.f is None:
         dir = args.dir
         print("Processing the following files:")
-        for f in glob.glob("{}/*".format(dir)):
+        for f in glob.glob("{}/*.*".format(dir)):
             print(f)
             new_file = process_file(f)
     else:
-        print("You must specify either -f <file> OR -dir <directory containing files>")
+        print("You must specify either -f <file> OR --dir <directory containing files>")
 
     return new_file
 

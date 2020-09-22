@@ -284,19 +284,24 @@ def run_validator(file, logfile):
 
     validator = Validator(file=file, logfile=logfile)
 
+    is_ok_to_run_validation = 1
     logger.info("Validating file extension...")
     if not validator.validate_file_extension():
         logger.info("Invalid file extesion: {}".format(file))
         logger.info("Exiting before any further checks")
-        sys.exit()
+        is_ok_to_run_validation = 0
+        #sys.exit()
 
-    logger.info("Validating headers...")
-    if not validator.validate_headers():
-        logger.info("Invalid headers...exiting before any further checks")
-        sys.exit()
+    if is_ok_to_run_validation:
+        logger.info("Validating headers...")
+        if not validator.validate_headers():
+            logger.info("Invalid headers...exiting before any further checks")
+            is_ok_to_run_validation = 0
+            #sys.exit()
 
-    logger.info("Validating data...")
-    validator.validate_data()
+    if is_ok_to_run_validation:
+        logger.info("Validating data...")
+        validator.validate_data()
 
     # Close log handler
     logger.removeHandler(validator.handler)
@@ -305,18 +310,19 @@ def run_validator(file, logfile):
 
 def main():
     argparser = argparse.ArgumentParser()
-    argparser.add_argument("-f", help='The path to the summary statistics file to be validated', required=True)
-    argparser.add_argument("--filetype", help='The type of file/stage in the process the file to be validated is in. Recommended to leave as default if unknown.', default='pgs-upload', choices=['gwas-upload','curated','standard','harmonised'])
+    argparser.add_argument("-f", help='The path to the polygenic scoring file to be validated', metavar='SCORING_FILE_NAME', required=True)
+    #argparser.add_argument("--filetype", help='The type of file/stage in the process the file to be validated is in. Recommended to leave as default if unknown.', default='pgs-upload', choices=['gwas-upload','curated','standard','harmonised'])
     argparser.add_argument("--logfile", help='Provide the filename for the logs', default='VALIDATE.log')
     argparser.add_argument("--linelimit", help='Stop when this number of bad rows has been found', default=0)
-    argparser.add_argument("--drop-bad-lines", help='Store the good lines from the file in a file named <summary-stats-file>.valid', action='store_true', dest='dropbad')
+    argparser.add_argument("--drop-bad-lines", help='Store the good lines from the file in a file named <polygenic-scoring-file>.valid', action='store_true', dest='dropbad')
 
     args = argparser.parse_args()
 
     logfile = args.logfile
     linelimit = args.linelimit
+    default_filetype = 'pgs-upload'
 
-    validator = Validator(file=args.f, filetype=args.filetype, logfile=args.logfile, error_limit=linelimit)
+    validator = Validator(file=args.f, filetype=default_filetype, logfile=args.logfile, error_limit=linelimit)
 
     print('#-------------------#\n#  File Validation  #\n#-------------------#\n')
     print("Filename: "+args.f+"\n")
