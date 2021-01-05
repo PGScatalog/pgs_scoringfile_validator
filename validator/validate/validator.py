@@ -82,7 +82,7 @@ class Validator:
                     variant_lines += 1
                     if line != '':
                         cols = line.split(self.sep)
-                        has_trailing_spaces = check_leading_trailing_spaces(cols,line_number)
+                        has_trailing_spaces = self.check_leading_trailing_spaces(cols,line_number)
                         if has_trailing_spaces:
                             self.global_errors += 1
                             
@@ -100,7 +100,7 @@ class Validator:
         first_row = pd.read_csv(self.file, sep=self.sep, comment='#', nrows=1, index_col=False)
         # Check if the column headers have leading and/or trailing spaces
         # The leading/trailing spaces should raise an error during the header validation
-        has_trailing_spaces = check_leading_trailing_spaces(first_row.columns.values)
+        has_trailing_spaces = self.check_leading_trailing_spaces(first_row.columns.values)
         if has_trailing_spaces:
             self.global_errors += 1
 
@@ -254,6 +254,26 @@ class Validator:
             with open(self.file) as f:
                  return self.check_file_is_square(f)
 
+
+    def check_leading_trailing_spaces(self, cols, line_number=None):
+        '''
+        Check if the columns have leading and/or trailing spaces.
+        The leading/trailing spaces should raise an error during the validation.
+        '''
+        leading_trailing_spaces = []
+        found_trailing_spaces = False
+        for idx, col in enumerate(cols):
+            if col.startswith(' ') or col.endswith(' '):
+                leading_trailing_spaces.append(self.header[idx]+' => |'+str(col)+'|')
+        if len(leading_trailing_spaces):
+            if line_number:
+                line_name = f'line {line_number} has'
+            else:
+                line_name = 'following headers have'
+            logger.error("The "+line_name+" leading and/or trailing spaces: "+' ; '.join(leading_trailing_spaces))
+            found_trailing_spaces = True
+        return found_trailing_spaces
+
     def validate_headers(self):
         self.setup_field_validation()
         required_is_subset = set(STD_COLS_VAR).issubset(self.header)
@@ -276,26 +296,6 @@ class Validator:
             required_is_subset = None
 
         return required_is_subset
-
-
-def check_leading_trailing_spaces(cols, line_number=None):
-    ''' 
-    Check if the columns have leading and/or trailing spaces. 
-    The leading/trailing spaces should raise an error during the validation.
-    '''
-    leading_trailing_spaces = []
-    found_trailing_spaces = False
-    for col in cols:
-        if col.startswith(' ') or col.endswith(' '):
-            leading_trailing_spaces.append(col)
-    if len(leading_trailing_spaces):
-        if line_number:
-            line_name = f'line {line_number} has'
-        else: 
-            line_name = 'following headers have'
-        logger.error("The "+line_name+" leading and/or trailing spaces:\n|"+'|\n|'.join(leading_trailing_spaces)+'|')
-        found_trailing_spaces = True
-    return found_trailing_spaces
 
 def check_ext(filename, ext):
     if filename.endswith(ext):
