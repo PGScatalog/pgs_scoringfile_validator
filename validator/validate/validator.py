@@ -5,6 +5,8 @@ import os
 import argparse
 import pathlib
 import logging
+import gzip
+import re
 import pandas as pd
 from pandas_schema import Schema
 #from validator.schema import *
@@ -47,11 +49,9 @@ class Validator:
         self.error_limit = int(error_limit)
         self.handler = logging.FileHandler(self.logfile)
         self.handler.setLevel(logging.INFO)
-        #handler = logging.FileHandler(self.logfile)
-        ##handler.setLevel(logging.ERROR)
-        #handler.setLevel(logging.INFO)
 
-        #logger.addHandler(handler)
+        self.variants_number = 0
+
         logger.addHandler(self.handler)
 
     def setup_field_validation(self):
@@ -63,28 +63,48 @@ class Validator:
             self.cols_to_validate = [h for h in self.header if h in VALID_COLS]
         self.cols_to_read = [h for h in self.header if h in VALID_COLS]
 
-    #def setup_schema(self):
-    #    self.setup_field_validation()
-    #    self.schema = Schema([VALIDATORS[h] for h in self.cols_to_validate])
+
+    def get_and_check_variants_number(self):
+        ''' Verify that the number of variant lines corresponds to the number of variants in the headers '''
+        variant_lines = 0
+        
+        with gzip.open( self.file, 'rb') as f:
+            line_number = 0
+            for line in f:
+                line_number += 1
+                line = line.decode('utf-8').rstrip()
+                if line.startswith('#'):
+                    match_variants_number = re.search(r'Number\sof\sVariants\s\=\s(\d+)', line)
+                    if match_variants_number:
+                        self.variants_number = match_variants_number.group(1)
+                else:
+                    variant_lines += 1
+                    if line != '':
+                        cols = line.split(self.sep)
+                        check_leading_trailing_spaces(cols,line_number)
+                            
+        if self.variants_number:
+            if self.variants_number != (variant_lines - 1): # Remove the header line from the count
+                logger.error("- The number of variants lines is greater than the number of variants declared in the headers")
+        else:
+            logger.error("- Can't retrieve the number of variants from the headers")
+
 
     def get_header(self):
         first_row = pd.read_csv(self.file, sep=self.sep, comment='#', nrows=1, index_col=False)
         # Check if the column headers have leading and/or trailing spaces
         # The leading/trailing spaces should raise an error during the header validation
-        leading_trailing_spaces = []
-        for col in first_row.columns.values:
-            if col.startswith(' ') or col.endswith(' '):
-                leading_trailing_spaces.append(col)
-        if len(leading_trailing_spaces):
-            logger.warning("The following headers have a leading and/or trailing spaces:\n|"+'|\n|'.join(leading_trailing_spaces)+'|')
+        check_leading_trailing_spaces(first_row.columns.values)
 
         return first_row.columns.values
 
     def validate_data(self):
-        self.setup_field_validation()
         if not self.open_file_and_check_for_squareness():
             logger.error("Please fix the table. Some rows have different numbers of columns to the header")
             logger.info("Rows with different numbers of columns to the header are not validated")
+        # Check the consitence between the declared variants number and the actual number of variants in the file
+        self.get_and_check_variants_number()
+
         for chunk in self.df_iterator():
             to_validate = chunk[self.cols_to_read]
             to_validate.columns = self.cols_to_validate # sets the headers to standard format if neeeded
@@ -247,6 +267,23 @@ class Validator:
             required_is_subset = None
 
         return required_is_subset
+
+
+def check_leading_trailing_spaces(cols, line_number=None):
+    ''' 
+    Check if the columns have leading and/or trailing spaces. 
+    The leading/trailing spaces should raise an error during the validation.
+    '''
+    leading_trailing_spaces = []
+    for col in cols:
+        if col.startswith(' ') or col.endswith(' '):
+            leading_trailing_spaces.append(col)
+    if len(leading_trailing_spaces):
+        if line_number:
+            line_name = f'line {line_number} has'
+        else: 
+            line_name = 'following headers have'
+        logger.error("The "+line_name+" leading and/or trailing spaces:\n|"+'|\n|'.join(leading_trailing_spaces)+'|')
 
 
 def check_ext(filename, ext):
