@@ -50,6 +50,7 @@ class Validator:
         self.handler = logging.FileHandler(self.logfile)
         self.handler.setLevel(logging.INFO)
 
+        self.global_errors = 0
         self.variants_number = 0
 
         logger.addHandler(self.handler)
@@ -76,25 +77,32 @@ class Validator:
                 if line.startswith('#'):
                     match_variants_number = re.search(r'Number\sof\sVariants\s\=\s(\d+)', line)
                     if match_variants_number:
-                        self.variants_number = match_variants_number.group(1)
+                        self.variants_number = int(match_variants_number.group(1))
                 else:
                     variant_lines += 1
                     if line != '':
                         cols = line.split(self.sep)
-                        check_leading_trailing_spaces(cols,line_number)
+                        has_trailing_spaces = check_leading_trailing_spaces(cols,line_number)
+                        if has_trailing_spaces:
+                            self.global_errors += 1
                             
         if self.variants_number:
-            if self.variants_number != (variant_lines - 1): # Remove the header line from the count
-                logger.error("- The number of variants lines is greater than the number of variants declared in the headers")
+            variant_lines -= 1 # Remove the header line from the count
+            if self.variants_number != variant_lines:
+                logger.error(f'- The number of variants lines in the file ({variant_lines}) and the number of variants declared in the headers ({self.variants_number}) are different')
+                self.global_errors += 1
         else:
             logger.error("- Can't retrieve the number of variants from the headers")
+            self.global_errors += 1
 
 
     def get_header(self):
         first_row = pd.read_csv(self.file, sep=self.sep, comment='#', nrows=1, index_col=False)
         # Check if the column headers have leading and/or trailing spaces
         # The leading/trailing spaces should raise an error during the header validation
-        check_leading_trailing_spaces(first_row.columns.values)
+        has_trailing_spaces = check_leading_trailing_spaces(first_row.columns.values)
+        if has_trailing_spaces:
+            self.global_errors += 1
 
         return first_row.columns.values
 
@@ -139,9 +147,10 @@ class Validator:
             self.process_errors()
             if len(self.bad_rows) >= self.error_limit:
                 break
-        if not self.bad_rows:
+        if not self.bad_rows and not self.global_errors:
             logger.info("File is valid")
             return True
+
         else:
             logger.info("File is invalid - {} bad rows, limit set to {}".format(len(self.bad_rows), self.error_limit))
             return False
@@ -275,6 +284,7 @@ def check_leading_trailing_spaces(cols, line_number=None):
     The leading/trailing spaces should raise an error during the validation.
     '''
     leading_trailing_spaces = []
+    found_trailing_spaces = False
     for col in cols:
         if col.startswith(' ') or col.endswith(' '):
             leading_trailing_spaces.append(col)
@@ -284,7 +294,8 @@ def check_leading_trailing_spaces(cols, line_number=None):
         else: 
             line_name = 'following headers have'
         logger.error("The "+line_name+" leading and/or trailing spaces:\n|"+'|\n|'.join(leading_trailing_spaces)+'|')
-
+        found_trailing_spaces = True
+    return found_trailing_spaces
 
 def check_ext(filename, ext):
     if filename.endswith(ext):
