@@ -80,11 +80,14 @@ class Validator:
                         self.variants_number = int(match_variants_number.group(1))
                 else:
                     variant_lines += 1
-                    if line != '':
+                    if re.search('\w+', line): # Line not empty
                         cols = line.split(self.sep)
                         has_trailing_spaces = self.check_leading_trailing_spaces(cols,line_number)
                         if has_trailing_spaces:
                             self.global_errors += 1
+                    else:
+                        logger.error(f'- Line {line_number} is empty')
+                        self.global_errors += 1
                             
         if self.variants_number:
             variant_lines -= 1 # Remove the header line from the count
