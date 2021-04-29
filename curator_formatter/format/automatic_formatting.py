@@ -1,6 +1,7 @@
 import glob
 import sys
 import os
+import gzip
 import argparse
 from tqdm import tqdm
 import pandas as pd
@@ -18,8 +19,10 @@ def multi_delimiters_to_single(row):
 def process_file(file):
     dirname = os.path.dirname(file)
     filename, file_extension = os.path.splitext(file)
+    print("FILE: "+file)
+    print("DIRNAME: "+dirname)
     create_formatted_directory(dirname)
-    new_filename = dirname + extra_formatted_dir + '/formatted_' + os.path.basename(filename) + '.tsv'
+    new_filename = dirname + extra_formatted_dir + '/formatted_' + os.path.basename(filename) + '.txt'
     temp_file  = filename + '.tmp'
     unnamed_col = 'Unnamed: 0'
     main_sep = '\t'
@@ -135,16 +138,25 @@ def process_file(file):
         os.remove(temp_file)
 
     if os.path.exists(new_filename):
-        print("\n------> Output saved in file:", new_filename, "<------\n")
+        new_gzip_filename = new_filename+'.gz'
+        input = open(new_filename, 'rb')
+        file_content = input.read()
+        input.close()
+
+        compressed_file = gzip.open(new_gzip_filename, 'wb')
+        compressed_file.write(file_content)
+        compressed_file.close()
+
+        print("\n------> Output saved in file:", new_gzip_filename, "<------\n")
         print("Please use this file for any further formatting.\n")
         print("Showing how the headers where mapped below...\n")
         for key, value in what_changed.items():
             print(key, " -> ", value)
         print("\nPeeking into the new file...")
         print("\n")
-        peek.peek(new_filename)
+        peek.peek(new_gzip_filename)
 
-    return new_filename
+    return new_gzip_filename
 
 
 def ordered_columns(dataframe):
