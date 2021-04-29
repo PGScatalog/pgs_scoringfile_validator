@@ -66,8 +66,8 @@ GENERIC_VALIDATORS = {
     OR_DSET: Column(OR_DSET, [CanConvertValidation(DSET_TYPES[OR_DSET])], allow_empty=True),
     HR_DSET: Column(HR_DSET, [CanConvertValidation(DSET_TYPES[HR_DSET])], allow_empty=True),
     BETA_DSET: Column(BETA_DSET, [CanConvertValidation(DSET_TYPES[BETA_DSET])], allow_empty=True),
-    EFFECT_DSET: Column(EFFECT_DSET, [MatchesPatternValidation(r'^[ACTGNactgn]+$')], allow_empty=False),
-    REF_DSET: Column(REF_DSET, [MatchesPatternValidation(r'^[ACTGNactgn]+$')], allow_empty=True),
+    EFFECT_DSET: Column(EFFECT_DSET, [MatchesPatternValidation(r'^[ACTGN]+$')], allow_empty=False),
+    REF_DSET: Column(REF_DSET, [MatchesPatternValidation(r'^[ACTGN]+$')], allow_empty=True),
     FREQ_DSET: Column(FREQ_DSET, [CanConvertValidation(DSET_TYPES[FREQ_DSET])], allow_empty=True),
     LOCUS_DSET: Column(LOCUS_DSET, [CanConvertValidation(DSET_TYPES[LOCUS_DSET]), LeadingWhitespaceValidation(), TrailingWhitespaceValidation()], allow_empty=True)
 }
