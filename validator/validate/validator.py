@@ -135,10 +135,6 @@ class Validator:
                 self.schema = Schema([POS_VALIDATORS[h] for h in self.cols_to_validate])
                 errors = self.schema.validate(to_validate)
                 self.store_errors(errors)
-            if EFFECT_WEIGHT_DSET in self.header:
-                self.schema = Schema([EFFECT_WEIGHT_VALIDATOR[h] for h in self.cols_to_validate])
-                errors = self.schema.validate(to_validate)
-                self.store_errors(errors)
             if OR_DSET in self.header:
                 self.schema = Schema([OR_VALIDATOR[h] for h in self.cols_to_validate])
                 errors = self.schema.validate(to_validate)
@@ -225,8 +221,6 @@ class Validator:
         df = pd.read_csv(self.file,
                          sep=self.sep,
                          dtype=str,
-                         error_bad_lines=False,
-                         warn_bad_lines=False,
                          comment='#',
                          chunksize=1000000)
         return df
