@@ -63,7 +63,7 @@ null_validation = CustomElementValidation(lambda d: d is not np.nan, error_msg)
 
 
 GENERIC_VALIDATORS = {
-    SNP_DSET: Column(SNP_DSET, [CanConvertValidation(DSET_TYPES[SNP_DSET]), MatchesPatternValidation(r'^rs[0-9]+$')], allow_empty=True),
+    SNP_DSET: Column(SNP_DSET, [CanConvertValidation(DSET_TYPES[SNP_DSET]), MatchesPatternValidation(r'^(rs|HLA\-\w+\*)[0-9]+$')], allow_empty=True),
     CHR_DSET: Column(CHR_DSET, [InListValidation(VALID_CHROMOSOMES), null_validation], allow_empty=True),
     BP_DSET: Column(BP_DSET, [CanConvertValidation(DSET_TYPES[BP_DSET]), InInclusiveRangeValidation(1, 999999999)], allow_empty=True),
     EFFECT_WEIGHT_DSET: Column(EFFECT_WEIGHT_DSET, [CanConvertValidation(DSET_TYPES[EFFECT_WEIGHT_DSET]), null_validation], allow_empty=False),
@@ -77,10 +77,10 @@ GENERIC_VALIDATORS = {
 }
 
 SNP_VALIDATORS = {k:v for k,v in GENERIC_VALIDATORS.items()}
-SNP_VALIDATORS[SNP_DSET] = Column(SNP_DSET, [CanConvertValidation(DSET_TYPES[SNP_DSET]), MatchesPatternValidation(r'^rs[0-9]+$')], allow_empty=False)
+SNP_VALIDATORS[SNP_DSET] = Column(SNP_DSET, [CanConvertValidation(DSET_TYPES[SNP_DSET]), MatchesPatternValidation(r'^(rs|HLA\-\w+\*)[0-9]+$')], allow_empty=False)
 
 SNP_EMPTY_VALIDATORS = {k:v for k,v in GENERIC_VALIDATORS.items()}
-SNP_EMPTY_VALIDATORS[SNP_DSET] = Column(SNP_DSET, [CanConvertValidation(DSET_TYPES[SNP_DSET]), MatchesPatternValidation(r'^(rs[0-9]+|nan)$')], allow_empty=False)
+SNP_EMPTY_VALIDATORS[SNP_DSET] = Column(SNP_DSET, [CanConvertValidation(DSET_TYPES[SNP_DSET]), MatchesPatternValidation(r'^(rs[0-9]+|HLA\-\w+\*[0-9]+|nan)$')], allow_empty=False)
 SNP_EMPTY_VALIDATORS[CHR_DSET] = Column(CHR_DSET, [InListValidation(VALID_CHROMOSOMES)], allow_empty=False)
 SNP_EMPTY_VALIDATORS[BP_DSET]  = Column(BP_DSET, [CanConvertValidation(DSET_TYPES[BP_DSET]), InInclusiveRangeValidation(1, 999999999)], allow_empty=False)
 
