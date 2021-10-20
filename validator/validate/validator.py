@@ -109,6 +109,24 @@ class Validator:
 
         return first_row.columns.values
 
+
+    def detect_duplicated_rows(self,dataframe_chunk):
+        ''' Detect duplicated rows in the scoring file. '''
+        # Columns of interest to compare the different rows
+        cols_sel = []
+        for col in ['rsID','chr_name','chr_position','effect_allele']:
+            if col in self.cols_to_validate:
+                cols_sel.append(col)
+
+        duplicate_status = dataframe_chunk.duplicated(cols_sel)
+        if any(duplicate_status):
+            duplicated_rows = dataframe_chunk[duplicate_status]
+            logger.error(f'Duplicated row(s) found: {len(duplicated_rows.index)}\n\t-> {duplicated_rows.to_string(header=False,index=False)}')
+            self.global_errors += 1
+            for index in duplicated_rows.index:
+                self.bad_rows.append(index)
+
+
     def validate_data(self):
         if not self.open_file_and_check_for_squareness():
             logger.error("Please fix the table. Some rows have different numbers of columns to the header")
@@ -119,6 +137,9 @@ class Validator:
         for chunk in self.df_iterator():
             to_validate = chunk[self.cols_to_read]
             to_validate.columns = self.cols_to_validate # sets the headers to standard format if neeeded
+
+            # Detect duplicated rows
+            self.detect_duplicated_rows(to_validate)
 
             # validate the snp column if present
             if SNP_DSET in self.header:
