@@ -19,5 +19,5 @@ class SSTestFile:
         df.to_csv("./tests/data/{}".format(self.filename), sep=self.sep, index=False, mode='w')
 
     def prepare_dictionary(self):
-        return {SNP_DSET: snpsarray, CHR_DSET: chrarray, BP_DSET: bparray, EFFECT_DSET: effectarray, REF_DSET: refarray,
+        return {SNP_DSET: snpsarray, CHR_DSET: chrarray, BP_DSET: bparray, EFFECT_DSET: effectarray, OTH_DSET: refarray,
                     EFFECT_WEIGHT_DSET: weightarray, LOCUS_DSET: locusarray, OR_DSET: orarray, HR_DSET: hrarray, BETA_DSET: betaarray, FREQ_DSET: frequencyarray}
