@@ -10,13 +10,13 @@ sys_paths = ['../']
 sys.path.extend(sys_paths)
 from common_constants import *
 
-STD_COLS_VAR = (EFFECT_DSET, CHR_DSET, BP_DSET, SNP_DSET) #OR_DSET, RANGE_L_DSET, RANGE_U_DSET, BETA_DSET, SE_DSET, FREQ_DSET , EFFECT_DSET, REF_DSET)
+STD_COLS_VAR = (EFFECT_DSET, CHR_DSET, BP_DSET, SNP_DSET) #OR_DSET, RANGE_L_DSET, RANGE_U_DSET, BETA_DSET, SE_DSET, FREQ_DSET , EFFECT_DSET, OTH_DSET)
 STD_COLS_VAR_POS = (EFFECT_DSET, CHR_DSET, BP_DSET)
 STD_COLS_VAR_SNP = (EFFECT_DSET, SNP_DSET)
 
 STD_COLS_EFFECT = (EFFECT_WEIGHT_DSET,OR_DSET,HR_DSET)
 
-VALID_COLS = (EFFECT_WEIGHT_DSET, OR_DSET, HR_DSET, BETA_DSET, FREQ_DSET, LOCUS_DSET, EFFECT_DSET, REF_DSET, CHR_DSET, BP_DSET, SNP_DSET)
+VALID_COLS = (EFFECT_WEIGHT_DSET, OR_DSET, HR_DSET, BETA_DSET, FREQ_DSET, LOCUS_DSET, EFFECT_DSET, OTH_DSET, CHR_DSET, BP_DSET, SNP_DSET)
 
 CURATOR_STD_MAP = {
 
@@ -34,8 +34,8 @@ CURATOR_STD_MAP = {
     'beta': BETA_DSET,
     # effect allele
     'effect_allele': EFFECT_DSET,
-    # reference allele
-    'reference_allele': REF_DSET,
+    # other allele
+    'other_allele': OTH_DSET,
     # effect weight
     'effect_weight': EFFECT_WEIGHT_DSET
 }
@@ -58,7 +58,7 @@ BUILD_MAP = {'28': 'NCBI28',
 
 VALID_FILE_EXTENSIONS = [".txt", ".tsv", ".csv", ".tsv.gz", ".csv.gz", "gz", "gzip", ".tsv.gzip", ".csv.gzip"]
 
-error_msg = 'this column cannot be null/empty'
+error_msg = 'this column cannot be null/empty' 
 null_validation = CustomElementValidation(lambda d: d is not np.nan, error_msg)
 
 
@@ -71,7 +71,7 @@ GENERIC_VALIDATORS = {
     HR_DSET: Column(HR_DSET, [CanConvertValidation(DSET_TYPES[HR_DSET]), null_validation], allow_empty=True),
     BETA_DSET: Column(BETA_DSET, [CanConvertValidation(DSET_TYPES[BETA_DSET]), null_validation], allow_empty=True),
     EFFECT_DSET: Column(EFFECT_DSET, [MatchesPatternValidation(r'^[ACTGN]+$')], allow_empty=False),
-    REF_DSET: Column(REF_DSET, [MatchesPatternValidation(r'^[ACTGN]+$')], allow_empty=True),
+    OTH_DSET: Column(OTH_DSET, [MatchesPatternValidation(r'^[ACTGN]+$')], allow_empty=True),
     FREQ_DSET: Column(FREQ_DSET, [CanConvertValidation(DSET_TYPES[FREQ_DSET]), null_validation], allow_empty=True),
     LOCUS_DSET: Column(LOCUS_DSET, [CanConvertValidation(DSET_TYPES[LOCUS_DSET]), LeadingWhitespaceValidation(), TrailingWhitespaceValidation(), null_validation], allow_empty=True)
 }

@@ -75,7 +75,7 @@ class Validator:
                 line_number += 1
                 line = line.decode('utf-8').rstrip()
                 if line.startswith('#'):
-                    match_variants_number = re.search(r'Number\sof\sVariants\s\=\s(\d+)', line)
+                    match_variants_number = re.search(r'#variants_number=(\d+)', line)
                     if match_variants_number:
                         self.variants_number = int(match_variants_number.group(1))
                 else:
@@ -260,6 +260,7 @@ class Validator:
                     continue
             if (len(row) != len(self.header)):
                 logger.error("Length of row {c} is: {l} instead of {h}".format(c=count, l=str(len(row)), h=str(len(self.header))))
+                logger.error("ROW: "+str(row))
                 square = False
             count += 1
         return square

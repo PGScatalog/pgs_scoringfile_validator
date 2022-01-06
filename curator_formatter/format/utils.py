@@ -181,7 +181,7 @@ header_mapper = {
         'maf',
         'eafcontrols',
         'frq',
-        'ref_allele_frequency',
+        'oth_allele_frequency',
         'frq_u',
         'f_u',
         'effect_allele_freq',
@@ -218,7 +218,7 @@ HR_VAL = HR_DSET
 BETA = BETA_DSET
 CHR_BP = 'chr_bp'
 EFFECT_ALLELE = EFFECT_DSET
-REF_ALLELE = REF_DSET
+OTH_ALLELE = OTH_DSET
 FREQ_ALLELE = FREQ_DSET
 EFFECT_WEIGHT = EFFECT_WEIGHT_DSET
 LOCUS_NAME = LOCUS_DSET
@@ -348,36 +348,36 @@ known_header_transformations = {
     'Coded': EFFECT_ALLELE,
     'Effect-allele': EFFECT_ALLELE,
     # other allele
-    'a2': REF_ALLELE,
-    'Allele2': REF_ALLELE,
-    'allele_2': REF_ALLELE,
-    'other_allele': REF_ALLELE,
-    'ref': REF_ALLELE,
-    'non_effect_allele': REF_ALLELE,
-    'dec_allele': REF_ALLELE,
-    'nea': REF_ALLELE,
-    'allelea': REF_ALLELE,
-    'allele_a': REF_ALLELE,
-    'reference_allele': REF_ALLELE,
-    'allele0': REF_ALLELE,
-    'referenceallele': REF_ALLELE,
-    'a0': REF_ALLELE,
-    'noneffect_allele': REF_ALLELE,
-    'alleleB': REF_ALLELE,
-    'A2': REF_ALLELE,
-    'alleleA': REF_ALLELE,
-    'ALLELE0': REF_ALLELE,
-    'allele2': REF_ALLELE,
-    'NONEFF_ALLELE': REF_ALLELE,
-    'OtherAllele': REF_ALLELE,
-    'non_coded_allele': REF_ALLELE,
-    'Non_coded': REF_ALLELE,
-    'Other-allele': REF_ALLELE,
+    'a2': OTH_ALLELE,
+    'Allele2': OTH_ALLELE,
+    'allele_2': OTH_ALLELE,
+    'other_allele': OTH_ALLELE,
+    'ref': OTH_ALLELE,
+    'non_effect_allele': OTH_ALLELE,
+    'dec_allele': OTH_ALLELE,
+    'nea': OTH_ALLELE,
+    'allelea': OTH_ALLELE,
+    'allele_a': OTH_ALLELE,
+    'reference_allele': OTH_ALLELE,
+    'allele0': OTH_ALLELE,
+    'referenceallele': OTH_ALLELE,
+    'a0': OTH_ALLELE,
+    'noneffect_allele': OTH_ALLELE,
+    'alleleB': OTH_ALLELE,
+    'A2': OTH_ALLELE,
+    'alleleA': OTH_ALLELE,
+    'ALLELE0': OTH_ALLELE,
+    'allele2': OTH_ALLELE,
+    'NONEFF_ALLELE': OTH_ALLELE,
+    'OtherAllele': OTH_ALLELE,
+    'non_coded_allele': OTH_ALLELE,
+    'Non_coded': OTH_ALLELE,
+    'Other-allele': OTH_ALLELE,
     # effect allele frequency
     'maf': FREQ_ALLELE,
     'eafcontrols': FREQ_ALLELE,
     'frq': FREQ_ALLELE,
-    'ref_allele_frequency': FREQ_ALLELE,
+    'oth_allele_frequency': FREQ_ALLELE,
     'frq_u': FREQ_ALLELE,
     'f_u': FREQ_ALLELE,
     'effect_allele_freq': FREQ_ALLELE,
@@ -409,7 +409,7 @@ known_header_transformations = {
 #BP = 'bp'
 #VARIANT = 'snp'
 
-DESIRED_HEADERS = {CHR, BP, VARIANT, OR_VAL, HR_VAL, BETA, CHR_BP, EFFECT_ALLELE, REF_ALLELE, FREQ_ALLELE, EFFECT_WEIGHT, LOCUS_NAME}
+DESIRED_HEADERS = {CHR, BP, VARIANT, OR_VAL, HR_VAL, BETA, CHR_BP, EFFECT_ALLELE, OTH_ALLELE, FREQ_ALLELE, EFFECT_WEIGHT, LOCUS_NAME}
 
 VALID_INPUT_HEADERS = set(known_header_transformations.values())
 
