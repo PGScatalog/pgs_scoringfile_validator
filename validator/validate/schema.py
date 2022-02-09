@@ -73,7 +73,11 @@ GENERIC_VALIDATORS = {
     EFFECT_DSET: Column(EFFECT_DSET, [MatchesPatternValidation(r'^[ACTGN]+$')], allow_empty=False),
     OTH_DSET: Column(OTH_DSET, [MatchesPatternValidation(r'^[ACTGN]+$')], allow_empty=True),
     FREQ_DSET: Column(FREQ_DSET, [CanConvertValidation(DSET_TYPES[FREQ_DSET]), null_validation], allow_empty=True),
-    LOCUS_DSET: Column(LOCUS_DSET, [CanConvertValidation(DSET_TYPES[LOCUS_DSET]), LeadingWhitespaceValidation(), TrailingWhitespaceValidation(), null_validation], allow_empty=True)
+    LOCUS_DSET: Column(LOCUS_DSET, [CanConvertValidation(DSET_TYPES[LOCUS_DSET]), LeadingWhitespaceValidation(), TrailingWhitespaceValidation(), null_validation], allow_empty=True),
+    DOSAGE_0_WEIGHT: Column(DOSAGE_0_WEIGHT, [CanConvertValidation(DSET_TYPES[DOSAGE_0_WEIGHT]), null_validation], allow_empty=True),
+    DOSAGE_1_WEIGHT: Column(DOSAGE_1_WEIGHT, [CanConvertValidation(DSET_TYPES[DOSAGE_1_WEIGHT]), null_validation], allow_empty=True),
+    DOSAGE_2_WEIGHT: Column(DOSAGE_2_WEIGHT, [CanConvertValidation(DSET_TYPES[DOSAGE_2_WEIGHT]), null_validation], allow_empty=True)
+
 }
 
 SNP_VALIDATORS = {k:v for k,v in GENERIC_VALIDATORS.items()}
