@@ -1,6 +1,6 @@
-# sum-stats-formatter
-* Formatting and harmonising scripts for scoring files that will be imported into the PGS Catalog database.
-* Validating format and data types of the scoring files
+# PGS Catalog Scoring file validator 
+* Scripts to format and harmonise scoring files for the PGS Catalog.
+* Validate the format and data of the scoring files.
 
 
 
