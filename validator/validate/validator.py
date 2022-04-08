@@ -31,29 +31,32 @@ logger = logging.getLogger(__name__)
 
 
 class Validator:
+    schema = None
+    header = []
+    cols_to_validate = []
+    cols_to_read = []
+
+    bad_rows = []
+    row_errors = []
+    errors_seen = {}
+    valid_extensions = VALID_FILE_EXTENSIONS
+
+    genomebuild = None
+    comment_lines_count = 1 # Counting the header line
+    global_errors = 0
+    variants_number = 0
+
     def __init__(self, file, filetype='pgs-upload', logfile="VALIDATE.log", error_limit=0):
         self.file = file
         self.filetype = filetype
-        self.schema = None
-        self.header = []
-        self.comment_lines_count = 1 # Counting the header line
-        self.cols_to_validate = []
-        self.cols_to_read = []
         self.sep = get_seperator(self.file)
-        self.bad_rows = []
-        self.row_errors = []
-        self.errors_seen = {}
-        #self.required_fields = STD_COLS
-        self.valid_extensions = VALID_FILE_EXTENSIONS
         self.logfile = logfile
         self.error_limit = int(error_limit)
         self.handler = logging.FileHandler(self.logfile)
         self.handler.setLevel(logging.INFO)
 
-        self.global_errors = 0
-        self.variants_number = 0
-
         logger.addHandler(self.handler)
+
 
     def setup_field_validation(self):
         self.header = self.get_header()
@@ -108,6 +111,18 @@ class Validator:
             self.global_errors += 1
 
         return first_row.columns.values
+
+
+    def get_genomebuild(self):
+        ''' Retrieve the Genome Build from the comments '''
+        with gzip.open(self.file, 'rb') as f_in:
+            for f_line in f_in:
+                line = f_line.decode()
+                # Update header
+                if line.startswith('#genome_build'):
+                    gb = (line.split('='))[1]
+                    self.genomebuild = gb.strip()
+                    return
 
 
     def detect_duplicated_rows(self,dataframe_chunk):
@@ -246,11 +261,18 @@ class Validator:
                          chunksize=1000000)
         return df
 
+    def detect_genomebuild_with_rsid(self):
+        ''' The column "rsID" should always be in the scoring file when the genome build is not reported (i.e. "NR") '''
+        self.get_genomebuild()
+        if self.genomebuild == 'NR':
+            if SNP_DSET not in self.header:
+                logger.error(f"- The combination: Genome Build = '{self.genomebuild}' & the missing column '{SNP_DSET}' in the header is not allowed as we have to manually guess the genome build.")
+                self.global_errors += 1
+
+
     def check_file_is_square(self, csv_file):
         square = True
-        dialect = csv.Sniffer().sniff(csv_file.readline())
         csv_file.seek(0)
-        #reader = csv.reader(csv_file, dialect)
         reader = csv.reader(csv_file, delimiter=self.sep)
         count = 1
         for row in reader:
@@ -273,7 +295,6 @@ class Validator:
             with open(self.file) as f:
                  return self.check_file_is_square(f)
 
-
     def check_leading_trailing_spaces(self, cols, line_number=None):
         '''
         Check if the columns have leading and/or trailing spaces.
@@ -295,6 +316,7 @@ class Validator:
 
     def validate_headers(self):
         self.setup_field_validation()
+        self.detect_genomebuild_with_rsid()
         required_is_subset = set(STD_COLS_VAR).issubset(self.header)
         if not required_is_subset:
             # check if everything but snp:
