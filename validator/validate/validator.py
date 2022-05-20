@@ -31,29 +31,29 @@ logger = logging.getLogger(__name__)
 
 
 class Validator:
-    schema = None
-    header = []
-    cols_to_validate = []
-    cols_to_read = []
 
-    bad_rows = []
-    row_errors = []
-    errors_seen = {}
     valid_extensions = VALID_FILE_EXTENSIONS
-
-    genomebuild = None
-    comment_lines_count = 1 # Counting the header line
-    global_errors = 0
-    variants_number = 0
 
     def __init__(self, file, filetype='pgs-upload', logfile="VALIDATE.log", error_limit=0):
         self.file = file
         self.filetype = filetype
+        self.schema = None
+        self.header = []
+        self.genomebuild = None
+        self.comment_lines_count = 1 # Counting the header line
+        self.cols_to_validate = []
+        self.cols_to_read = []
         self.sep = get_seperator(self.file)
+        self.bad_rows = []
+        self.row_errors = []
+        self.errors_seen = {}
         self.logfile = logfile
         self.error_limit = int(error_limit)
         self.handler = logging.FileHandler(self.logfile)
         self.handler.setLevel(logging.INFO)
+
+        self.global_errors = 0
+        self.variants_number = 0
 
         logger.addHandler(self.handler)
 
