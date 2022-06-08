@@ -49,7 +49,7 @@ class Validator:
         self.errors_seen = {}
         self.logfile = logfile
         self.error_limit = int(error_limit)
-        self.handler = logging.FileHandler(self.logfile)
+        self.handler = logging.FileHandler(self.logfile, 'w+')
         self.handler.setLevel(logging.INFO)
 
         self.global_errors = 0
